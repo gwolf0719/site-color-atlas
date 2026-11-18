@@ -1,4 +1,4 @@
-import { fabric, paperLeaf } from "./chromatic-scene.js";
+import { fabric, foldedSector } from "./chromatic-scene.js";
 import {
   WebGLRenderer,
   Scene,
@@ -45,24 +45,10 @@ export function createWheel(host, onChoose, onHover, onLoss, onRemove) {
   rig.add(wedges);
   const makeMaterial = (color) =>
     new MeshBasicMaterial({ color, side: DoubleSide });
-  const pin = new Mesh(
-    new RingGeometry(0.008, 0.135, 80),
-    makeMaterial("#938D96"),
-  );
-  pin.position.z = 0.56;
-  rig.add(pin);
-  const cap = new Mesh(
-    new RingGeometry(0.088, 0.106, 64),
-    makeMaterial("#D0CCD0"),
-  );
-  cap.position.z = 0.57;
-  rig.add(cap);
   let spin = 0.28,
     velocity = 0,
     gesture = null,
     timer = 0,
-    flying = null,
-    previousCount = 0,
     lastKey = "";
   function stopGesture() {
     clearTimeout(timer);
@@ -92,7 +78,6 @@ export function createWheel(host, onChoose, onHover, onLoss, onRemove) {
   const ratioBand = new Group();
   rig.add(ratioBand);
   function update(values, picks, background) {
-    receivedColor(picks);
     for (const segment of [...ratioBand.children]) {
       ratioBand.remove(segment);
       segment.geometry.dispose();
@@ -103,8 +88,8 @@ export function createWheel(host, onChoose, onHover, onLoss, onRemove) {
       const arc = (TAU * pick.percent) / 100;
       const segment = new Mesh(
         new RingGeometry(
-          values.length ? 0.16 : 0.25,
-          values.length ? 0.23 : 2.23,
+          values.length ? 0.43 : 0.65,
+          values.length ? 0.52 : 2.23,
           Math.max(4, Math.ceil((100 * arc) / TAU)),
           1,
           startAngle - arc,
@@ -129,53 +114,18 @@ export function createWheel(host, onChoose, onHover, onLoss, onRemove) {
     active = null;
     intro = motion.matches ? 1 : 0;
     for (const [i, item] of values.entries()) {
-      const theta =
-        -1.62 +
-        (i / Math.max(1, values.length - 1)) *
-          TAU *
-          (values.length <= 12 ? 0.62 : 0.87);
+      const span = TAU / values.length;
+      const theta = -Math.PI / 2 + i * span;
       const material = new MeshBasicMaterial({
         vertexColors: true,
         side: DoubleSide,
         toneMapped: false,
       });
-      const mesh = new Mesh(
-        paperLeaf(
-          item.hex,
-          Math.min(0.57, Math.max(0.31, 6.2 / values.length)),
-        ),
-        material,
-      );
+      const mesh = new Mesh(foldedSector(item.hex, span * 0.998), material);
       mesh.userData = { index: i, theta, hover: 0 };
       wedges.add(mesh);
     }
     schedule();
-  }
-  function removeFlying() {
-    if (!flying) return;
-    rig.remove(flying.mesh);
-    flying.mesh.geometry.dispose();
-    flying.mesh.material.dispose();
-    flying = null;
-  }
-  function receivedColor(picks) {
-    const index = options.findIndex((o) => o.hex === picks.at(-1)?.hex);
-    if (
-      picks.length > previousCount &&
-      !motion.matches &&
-      index >= 0 &&
-      wedges.children[index]
-    ) {
-      removeFlying();
-      const original = wedges.children[index],
-        mesh = original.clone();
-      mesh.geometry = original.geometry.clone();
-      mesh.material = original.material.clone();
-      mesh.rotation.z += wedges.rotation.z;
-      rig.add(mesh);
-      flying = { mesh, age: 0, theta: mesh.rotation.z };
-    }
-    previousCount = picks.length;
   }
   function draw(now) {
     frame = 0;
@@ -190,15 +140,15 @@ export function createWheel(host, onChoose, onHover, onLoss, onRemove) {
       velocity *= Math.exp(-5 * dt);
     }
     rig.rotation.x =
-      -0.68 +
+      -0.46 +
       (motion.matches
         ? 0
-        : 0.04 * Math.sin(elapsed * 0.47) +
-          pointerY * 0.075 +
+        : 0.075 * Math.sin(elapsed * 0.47) +
+          pointerY * 0.14 +
           scrollProgress * 0.17);
     rig.rotation.y =
       -0.19 +
-      (motion.matches ? 0 : 0.05 * Math.sin(elapsed * 0.41) + pointerX * 0.095);
+      (motion.matches ? 0 : 0.05 * Math.sin(elapsed * 0.41) + pointerX * 0.16);
     wedges.rotation.z = spin + 0.1;
     for (const mesh of wedges.children) {
       const m = mesh.userData,
@@ -215,26 +165,19 @@ export function createWheel(host, onChoose, onHover, onLoss, onRemove) {
       m.hover +=
         ((m.index === active ? 1 : 0) - m.hover) *
         (motion.matches ? 1 : Math.min(1, dt * 13));
-      const angle = -1.62 + (m.theta + 1.62) * spring;
-      mesh.rotation.set(0.04, 0.035, angle);
-      const d = 0.26 * m.hover;
+      const angle = m.theta - (1 - spring) * 1.9;
+      const wave =
+        motion.matches || gesture
+          ? 0
+          : 0.045 * Math.sin(m.theta * 2 - elapsed * 1.65);
+      mesh.rotation.set(wave + 0.14 * (1 - spring), -wave, angle);
+      const d = 0.23 * m.hover + 0.28 * (1 - spring);
       mesh.position.set(
         d * Math.cos(angle),
         d * Math.sin(angle),
-        0.011 * m.index + 0.14 * m.hover,
+        wave + 0.25 * m.hover + 0.6 * (1 - spring),
       );
-    }
-    if (flying) {
-      flying.age += dt;
-      const u = Math.min(1, flying.age / 0.59);
-      flying.mesh.position.set(
-        (0.3 + u * 0.42) * Math.cos(flying.theta),
-        (0.3 + u * 0.42) * Math.sin(flying.theta),
-        0.7 + u * 0.8,
-      );
-      flying.mesh.scale.setScalar(1 - u * 0.86);
-      flying.mesh.rotation.z = flying.theta + u * 0.54;
-      if (u === 1) removeFlying();
+      mesh.scale.setScalar(0.28 + 0.72 * spring);
     }
     backdrop.frame(
       motion.matches ? 0 : elapsed,
@@ -247,8 +190,9 @@ export function createWheel(host, onChoose, onHover, onLoss, onRemove) {
     renderer.render(backdrop.scene, camera);
     renderer.clearDepth();
     renderer.setViewport(view.x, view.y, view.w, view.h);
-    renderer.render(scene, camera);
-    if (!motion.matches && running) schedule();
+    if (!orbit.parentElement.hasAttribute("data-study"))
+      renderer.render(scene, camera);
+    if (!motion.matches && running && !orbit.parentElement.hasAttribute("data-study")) schedule();
   }
   function schedule() {
     if (!frame && visible && !document.hidden)
@@ -345,7 +289,7 @@ export function createWheel(host, onChoose, onHover, onLoss, onRemove) {
     active = null;
     if (!drag && !borrow && selected) onRemove(selected);
     else if (!drag && !borrow && index !== null && options[index])
-      onChoose(options[index].hex);
+      onChoose(options[index].hex, { x: e.clientX, y: e.clientY });
     schedule();
   };
   orbit.onpointercancel = orbit.onlostpointercapture = () => {
@@ -378,7 +322,7 @@ export function createWheel(host, onChoose, onHover, onLoss, onRemove) {
       w: square.width,
       h: square.height,
     };
-    const half = 2.48,
+    const half = 2.6,
       aspect = view.w / view.h;
     camera.left = -half * aspect;
     camera.right = half * aspect;
@@ -403,6 +347,11 @@ export function createWheel(host, onChoose, onHover, onLoss, onRemove) {
     last = 0;
     schedule();
   };
+  const plateChanges = new MutationObserver(resume);
+  plateChanges.observe(orbit.parentElement, {
+    attributes: true,
+    attributeFilter: ["data-study"],
+  });
   motion.addEventListener("change", resume);
   document.addEventListener("visibilitychange", resume);
   renderer.domElement.addEventListener(
@@ -414,6 +363,7 @@ export function createWheel(host, onChoose, onHover, onLoss, onRemove) {
       cancelAnimationFrame(frame);
       observer.disconnect();
       size.disconnect();
+      plateChanges.disconnect();
       motion.removeEventListener("change", resume);
       document.removeEventListener("visibilitychange", resume);
       window.removeEventListener("scroll", scroll);
@@ -428,7 +378,6 @@ export function createWheel(host, onChoose, onHover, onLoss, onRemove) {
         orbit.onlostpointercapture =
         orbit.oncontextmenu =
           null;
-      removeFlying();
       clearWedges();
       backdrop.dispose();
       renderer.dispose();
@@ -443,11 +392,9 @@ export function createWheel(host, onChoose, onHover, onLoss, onRemove) {
     update,
     reset() {
       stopGesture();
-      removeFlying();
       active = null;
       spin = 0.28;
       velocity = pointerX = pointerY = 0;
-      previousCount = 0;
       intro = motion.matches ? 1 : 0;
       schedule();
     },

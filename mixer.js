@@ -1,4 +1,11 @@
 import {
+  showStudy,
+  proofColors,
+  collectChip,
+  cancelFlight,
+  turnPage,
+} from "./motion-studio.mjs";
+import {
   nextRole,
   backgroundSample,
   paintDesk,
@@ -10,10 +17,10 @@ import {
   quieterPrimary,
   renderCommercial,
 } from "./commercial-color.mjs";
-import { setupCatalog } from "./app.js";
+
 import { drawProof, seamControls } from "./paper-interactions.mjs";
 import { roles, defaults, cssRoles, ink, ratio } from "./color-rules.mjs";
-import { huntUrl } from "./hunt.js";
+import { huntUrl, loadReferences, referenceMatches } from "./hunt.js";
 import { layer, safe } from "./spectrum.mjs";
 import {
   LIMIT,
@@ -43,7 +50,7 @@ let chromaTrial = false;
 el("business-use").value = businessUse;
 function businessProof() {
   const variant = renderCommercial(picks, names, businessUse, chromaTrial);
-  if (el("recipe-sheet").open) {
+  if (!el("recipe-sheet").hidden) {
     const primary = names.indexOf("主色");
     paintDesk(
       variant
@@ -262,6 +269,7 @@ function trialProof(hex, action = "add", group) {
       caption =
         "試放" + sampleRoles[i] + " " + hex + " · " + sample[i].percent + "%";
   }
+  proofColors(sample, sampleRoles, hex);
   drawProof(picks, sample, caption, sampleRoles);
   const stage = el("wheel-host").parentElement;
   const bg = sample[sampleRoles.indexOf("背景")]?.hex;
@@ -357,7 +365,7 @@ function updateLink() {
   mixParams(url);
   history.replaceState(null, "", url);
 }
-function choose(hex) {
+function choose(hex, origin) {
   const next = appendColor(picks, hex);
   if (next === picks) return;
   names[picks.length] = nextRole(picks, names);
@@ -366,6 +374,7 @@ function choose(hex) {
   browseAll = false;
   updateLink();
   render();
+  collectChip(hex, origin);
 }
 function refreshOutput() {
   const list = el("allocations"),
@@ -439,6 +448,10 @@ function refreshOutput() {
     el(id).disabled = !picks.length;
   el("mix-empty").hidden = Boolean(picks.length);
   el("open-recipe").disabled = !picks.length;
+  if (!picks.length) {
+    el("recipe-sheet").hidden = true;
+    el("open-recipe").setAttribute("aria-expanded", "false");
+  }
 }
 function render() {
   el("desk-feedback").textContent = "";
@@ -468,6 +481,15 @@ function render() {
     pool.unshift(...edges.map(([name, hex]) => ({ name, hex })));
     pool.length = Math.min(pool.length, 72);
   }
+  if (!whole && !full) {
+    const examples = referenceMatches(primary, upcoming, picks);
+    for (const [i, color] of examples.entries()) {
+      const duplicate = pool.findIndex((c) => c.hex === color.hex);
+      if (duplicate >= 0) pool.splice(duplicate, 1);
+      pool.splice(3 + i * 4, 0, color);
+    }
+    pool.length = Math.min(pool.length, 72);
+  }
   const size = 12,
     pages = Math.ceil(pool.length / size);
   page = pages ? page % pages : 0;
@@ -492,7 +514,7 @@ function render() {
     : ready
       ? "可直接複製給 AI，或再加一個點綴色。"
       : !roleSet.includes("主色")
-        ? "點選色環或輸入色碼，開始專案配色。"
+        ? "從色環挑一個顏色。"
         : "滑過預覽，點一下加入。";
   el("wheel-kind").textContent = full
     ? "已選配色"
@@ -501,6 +523,7 @@ function render() {
       : "推薦搭配";
   el("wheel-kind").textContent +=
     "  /  " + (full ? picks.length : options.length) + " 色";
+  turnPage();
   el("choice-label").textContent = whole ? "色環選項" : "推薦配色";
   el("recommendations").replaceChildren();
   el("color-choice").replaceChildren();
@@ -520,6 +543,10 @@ function render() {
   for (const choice of swatches) {
     const button = make("button");
     button.className = "rec";
+    button.style.setProperty(
+      "--order",
+      el("recommendations").childElementCount,
+    );
     button.setAttribute("aria-label", "加入" + choice.name + " " + choice.hex);
     const chip = make("i");
     chip.style.background = choice.hex;
@@ -530,7 +557,7 @@ function render() {
       () => hover(choice, true),
       () => hover(null),
     );
-    button.onclick = () => choose(choice.hex);
+    button.onclick = () => choose(choice.hex, button.getBoundingClientRect());
     el("recommendations").append(button);
   }
   el("color-choice").disabled = full;
@@ -683,42 +710,32 @@ for (const id of [
       const buttons = el(id).querySelectorAll("[data-remove-hex]");
       (
         buttons[Math.min(index, buttons.length - 1)] ||
-        (el("recipe-sheet").open ? el("business-use") : el("open-recipe"))
+        (!el("recipe-sheet").hidden ? el("business-use") : el("open-recipe"))
       ).focus();
     }
   });
 }
 el("undo").onclick = () => removeSelected(picks.at(-1)?.hex);
-const catalog = setupCatalog(
-  (colors, code = null) => {
-    el("catalog-sheet").close();
-    picks = colors.reduce(appendColor, []);
-    names = [...defaults];
-    source = code;
-    page = 0;
-    browseAll = false;
-    updateLink();
-    render();
-    window.scrollTo({ top: 0, behavior: "instant" });
-    el("desk-feedback").textContent = "已套用 " + picks.length + " 色。";
-  },
-  () => picks[names.slice(0, picks.length).indexOf("主色")]?.hex || "",
-  (colors) => {
-    trial = null;
-    trialProof(null, "add", colors);
-  },
-);
-
-el("open-library").onclick = () => catalog.open();
-el("open-recipe").onclick = () => {
+function setRecipe(open) {
+  el("recipe-sheet").hidden = !open;
+  el("open-recipe").setAttribute("aria-expanded", String(open));
   endTrial();
-  el("recipe-sheet").showModal();
+  if (open) el("recipe-sheet").scrollIntoView({ block: "nearest" });
+  else {
+    chromaTrial = false;
+    if (location.hash === "#configuration") updateLink();
+  }
+}
+el("open-recipe").onclick = () => setRecipe(el("recipe-sheet").hidden);
+el("recipe-sheet").querySelector("[data-close]").onclick = () => {
+  setRecipe(false);
+  el("open-recipe").focus();
 };
-for (const button of document.querySelectorAll("[data-close]"))
-  button.onclick = () => button.closest("dialog").close();
 function resetDesk() {
-  for (const dialog of document.querySelectorAll("dialog[open]"))
-    dialog.close();
+  cancelFlight();
+  showStudy(false);
+  setRecipe(false);
+  el("custom-tools").open = false;
   picks = [];
   names = [...defaults];
   businessUse = el("business-use").value = "general";
@@ -738,7 +755,7 @@ function resetDesk() {
   el("hex-form").reset();
   el("bg-feedback").textContent = "";
   clearHold();
-  catalog.reset();
+
   wheel?.reset();
   updateLink();
   render();
@@ -776,29 +793,28 @@ el("share-mix").onclick = () => {
   copy(url.href, "已複製配色與比例連結。");
 };
 render();
-el("recipe-sheet").addEventListener("close", () => {
-  chromaTrial = false;
-  businessProof();
-  endTrial();
+if (location.hash === "#configuration" && picks.length) setRecipe(true);
+const legacyId = initial.get("palette");
+if (["#hunt", "#library", "#preview", "#sources"].includes(location.hash)) {
+  const url = new URL(location.href);
+  url.hash = "mixer";
+  history.replaceState(null, "", url);
+}
+loadReferences().then((team) => {
+  if (
+    !legacyId ||
+    picks.length ||
+    new URL(location.href).searchParams.get("palette") !== legacyId
+  )
+    return;
+  const palette = team.find((p) => p.id === legacyId);
+  if (!palette) return;
+  const c = palette.colors;
+  picks = [c.primary, c.canvas, c.accent, c.text].reduce(appendColor, []);
+  names = [...defaults];
+  updateLink();
+  render();
 });
-const panel = location.hash.slice(1);
-if (["hunt", "library", "preview", "sources"].includes(panel))
-  catalog.open(panel);
-else if (initial.has("palette")) catalog.open("preview");
-else if (panel === "configuration") el("recipe-sheet").showModal();
-for (const dialog of document.querySelectorAll("dialog"))
-  dialog.addEventListener("close", () => {
-    const url = new URL(location.href);
-    if (
-      ["#hunt", "#preview", "#library", "#sources", "#configuration"].includes(
-        url.hash,
-      )
-    )
-      url.hash = "";
-    url.searchParams.delete("palette");
-    url.searchParams.delete("view");
-    history.replaceState(null, "", url);
-  });
 import("./ring.js")
   .then(({ createWheel }) => {
     const fallback = el("ring-fallback");

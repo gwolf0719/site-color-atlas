@@ -1,0 +1,455 @@
+/* 印刷展頁。圖版與操作共用同一條基線，圖版中的刻線限定在試色區。 */
+body > header {
+  position: relative;
+  background: var(--paper);
+  border: 0;
+}
+.head {
+  min-height: 64px;
+  align-items: baseline;
+  padding-top: 16px;
+}
+.head .brand {
+  gap: 13px;
+}
+.brand span {
+  font-size: clamp(2rem, 3.25vw, 3.7rem);
+  font-weight: 500;
+  letter-spacing: -0.085em;
+}
+.brand small {
+  font-size: 0.76rem;
+  letter-spacing: 0.12em;
+}
+.head #reset {
+  border: 0;
+  border-bottom: 1px solid currentColor;
+  min-height: 36px;
+  padding: 0 0 2px;
+  border-radius: 0;
+}
+.stage {
+  min-height: calc(100svh - 64px);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto auto auto;
+  align-content: center;
+  gap: 8px;
+  overflow: clip;
+  padding: 8px max(4vw, calc((100vw - 1440px) / 2)) 22px;
+}
+.stage-copy {
+  display: contents;
+}
+.print-plate {
+  grid-area: 1/1;
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-width: 0;
+}
+.print-plate .orbit {
+  grid-area: 1/1;
+  width: min(70%, 78svh);
+  height: clamp(280px, 56svh, 620px);
+  aspect-ratio: auto;
+  position: relative;
+}
+.stage-intro {
+  grid-area: 1/1;
+  align-self: center;
+  justify-self: start;
+  z-index: 1;
+  max-width: 25%;
+  pointer-events: none;
+}
+.stage h1 {
+  font-family: "Songti TC", "Noto Serif TC", serif;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.06em;
+  line-height: 1.1;
+  letter-spacing: -0.045em;
+}
+.stage #pick-verb {
+  font:
+    500 0.89rem/1.5 "PingFang TC",
+    sans-serif;
+  letter-spacing: 0.08em;
+}
+.stage h1 em {
+  font-size: clamp(3.5rem, 6.65vw, 7.2rem);
+  font-weight: 600;
+  margin: 0;
+}
+.stage #instruction {
+  margin: 12px 0;
+  max-width: 14em;
+  line-height: 1.65;
+  font-size: 0.85rem;
+}
+.plate-bar,
+.plate-readout {
+  position: absolute;
+  right: 0;
+  z-index: 2;
+  max-width: 19%;
+  font:
+    500 0.75rem/1.5 ui-monospace,
+    monospace;
+  font-variant-numeric: tabular-nums;
+}
+.plate-bar {
+  top: 19%;
+  display: grid;
+  justify-items: end;
+  gap: 4px;
+}
+.plate-bar button {
+  color: inherit;
+  border: 0;
+  border-bottom: 1px solid currentColor;
+  background: transparent;
+  padding: 2px 0;
+  min-height: 40px;
+  font: inherit;
+}
+.plate-bar button::before {
+  content: "";
+  display: inline-block;
+  vertical-align: -1px;
+  width: 11px;
+  height: 11px;
+  margin-right: 8px;
+  border: 1px solid currentColor;
+  background: linear-gradient(90deg, transparent 50%, currentColor 50%);
+}
+.plate-readout {
+  bottom: 18%;
+  display: flex;
+  flex-direction: column-reverse;
+  text-align: right;
+}
+#readout-hex {
+  font-size: clamp(1.2rem, 2.5vw, 2.75rem);
+  letter-spacing: -0.055em;
+}
+.plate-readout #hover-code {
+  display: none;
+}
+#color-study {
+  grid-area: 1/1;
+  margin: 0;
+  width: min(48%, 760px);
+  display: grid;
+  align-content: center;
+  gap: 14px;
+  z-index: 1;
+  background: var(--surface);
+}
+#color-study[hidden] {
+  display: none;
+}
+[data-study] .orbit {
+  visibility: hidden;
+}
+.choice-area {
+  grid-area: 2/1;
+  width: min(620px, 100%);
+  max-width: none;
+  justify-self: center;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  column-gap: 20px;
+}
+.stage #recommendations {
+  grid-column: 1/-1;
+  display: flex;
+  gap: 3px;
+  justify-content: center;
+}
+.mix-browse {
+  grid-area: 2/1;
+  display: flex;
+  justify-content: start;
+}
+#custom-tools {
+  grid-area: 2/2;
+  justify-self: end;
+  font-size: 0.85rem;
+}
+.choice-area #custom-tools[open] {
+  grid-column: 1/-1;
+  grid-row: 3;
+  justify-self: stretch;
+}
+#custom-tools summary {
+  padding: 6px 0;
+  min-height: 32px;
+}
+.custom-tools-body {
+  display: grid;
+  gap: 2px 16px;
+  grid-template-columns: 1fr 1fr;
+  padding: 6px 0 12px;
+}
+.custom-tools-body #brand-color {
+  grid-column: 1/-1;
+  grid-row: 1;
+}
+.choice-area #custom-tools .custom-tools-body details[open] {
+  grid-column: 1/-1;
+}
+.stage-foot {
+  grid-area: 3/1;
+  margin-top: 5px;
+}
+#recipe-sheet {
+  position: static;
+  grid-area: 4/1;
+  width: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 4px 0 12px;
+  border: 0;
+  border-top: 1px solid var(--hair);
+  box-shadow: none;
+  overflow: visible;
+  background: var(--surface);
+  color: var(--print);
+}
+#recipe-sheet[hidden] {
+  display: none;
+}
+#recipe-sheet .sheet-head {
+  position: static;
+  background: transparent;
+}
+#recipe-sheet .sheet-head h2 {
+  font-size: 1.3rem;
+}
+#recipe-sheet .mix-output {
+  max-width: 780px;
+  margin-inline: auto;
+}
+.study-fields {
+  display: flex;
+  aspect-ratio: 2.5;
+  width: 100%;
+  max-height: 33svh;
+}
+.study-fields > div {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: 1;
+  background: var(--ground);
+}
+.study-fields i {
+  background: var(--sample);
+  width: 37%;
+  aspect-ratio: 1;
+}
+.study-fields code {
+  position: absolute;
+  bottom: 8px;
+  left: 10px;
+  font:
+    500 0.74rem/1.1 ui-monospace,
+    monospace;
+}
+#color-study figcaption {
+  text-align: center;
+  font-size: 0.82rem;
+}
+.rec {
+  position: relative;
+  min-height: 48px;
+  padding: 0 0 4px;
+}
+.rec i {
+  height: 46px;
+  border-radius: 0;
+  border: 0;
+  border-bottom: 3px solid color-mix(in srgb, currentColor 18%, transparent);
+}
+.rec:hover i,
+.rec:focus-visible i {
+  transform: translateY(-5px);
+}
+.stage-foot {
+  border-top-width: 2px;
+}
+.proof-head h2 {
+  font-family: "Songti TC", "Noto Serif TC", serif;
+  font-weight: 700;
+  font-size: 1.55rem;
+}
+#proof-strip:not(:empty) {
+  height: clamp(32px, 4.2vw, 60px);
+}
+#proof-strip:empty {
+  height: 9px;
+  background: repeating-linear-gradient(
+    110deg,
+    transparent 0 5px,
+    var(--hair) 5px 6px
+  );
+  opacity: 0.6;
+}
+.desk-actions #quick-copy {
+  border-radius: 25px;
+  padding-inline: 22px;
+}
+.desk-actions #open-recipe {
+  border-radius: 25px;
+}
+.travelling-chip {
+  position: fixed;
+  z-index: 9;
+  pointer-events: none;
+  padding: 12px 16px;
+  transform-origin: center;
+  box-shadow: 0 5px 15px #18181c29;
+  font:
+    600 0.76rem/1.1 ui-monospace,
+    monospace;
+  letter-spacing: 0.07em;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .plate-bar,
+  .plate-readout {
+    animation: plate-rule 0.7s cubic-bezier(0.17, 0.75, 0.28, 1) both;
+  }
+  .rec i {
+    animation: unprint 0.52s cubic-bezier(0.2, 0.8, 0.18, 1) backwards;
+    animation-delay: calc(var(--order, 0) * 22ms);
+    transition: transform 0.17s ease-out;
+  }
+  .study-fields > div {
+    animation: unprint 0.48s ease-out backwards;
+  }
+  .study-fields > div:nth-child(2) {
+    animation-delay: 0.09s;
+  }
+  .study-fields i {
+    animation: chip-in 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+  }
+  .desk-actions button:enabled:hover {
+    transform: translateY(-2px);
+  }
+  @keyframes plate-rule {
+    from {
+      clip-path: inset(0 100% 0 0);
+    }
+    to {
+      clip-path: inset(0);
+    }
+  }
+  @keyframes unprint {
+    from {
+      clip-path: inset(0 0 100% 0);
+    }
+    to {
+      clip-path: inset(0);
+    }
+  }
+  @keyframes chip-in {
+    from {
+      transform: scale(0.67) rotate(-8deg);
+    }
+    to {
+      transform: none;
+    }
+  }
+}
+@media (max-width: 800px) {
+  .head {
+    min-height: 50px;
+    padding-top: 9px;
+  }
+  .head .brand {
+    gap: 8px;
+  }
+  .brand span {
+    font-size: 1.8rem;
+  }
+  .brand small {
+    font-size: 0.65rem;
+  }
+  .stage {
+    min-height: calc(100svh - 50px);
+    align-content: start;
+    padding-block: 12px 18px;
+    gap: 6px;
+  }
+  .stage-intro {
+    align-self: start;
+    max-width: 66%;
+    padding-top: 2px;
+  }
+  .stage h1 {
+    flex-direction: row;
+    align-items: baseline;
+    gap: 3px;
+  }
+  .stage h1 em {
+    font-size: clamp(2rem, 6vw, 3.2rem);
+  }
+  .stage #instruction {
+    font-size: 0.78rem;
+    max-width: 24em;
+    margin: 3px 0;
+  }
+  .print-plate {
+    padding-top: 66px;
+    padding-bottom: 28px;
+  }
+  .print-plate .orbit {
+    width: min(100%, 580px);
+    height: clamp(210px, 39svh, 400px);
+  }
+  .plate-bar {
+    top: 0;
+    max-width: 32%;
+    gap: 0;
+  }
+  .plate-readout {
+    bottom: 2px;
+    max-width: none;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+  }
+  #readout-hex {
+    font-size: 0.85rem;
+  }
+  #color-study {
+    width: min(94%, 520px);
+  }
+  .stage #recommendations {
+    gap: 2px;
+  }
+  .rec {
+    min-height: 44px;
+  }
+  .rec i {
+    height: 34px;
+  }
+  .proof-head h2 {
+    font-size: 1.18rem;
+  }
+  #proof-strip:not(:empty) {
+    height: 25px;
+  }
+  .choice-area {
+    grid-row: 2;
+    margin: 0;
+  }
+  .study-fields {
+    aspect-ratio: 2.2;
+  }
+}
