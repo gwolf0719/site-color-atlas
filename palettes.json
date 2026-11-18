@@ -1,0 +1,274 @@
+[
+  {
+    "id": "risograph",
+    "name": "孔版洋紅",
+    "category": "品牌編輯",
+    "mode": "淺色",
+    "description": "洋紅標題配柔粉紙底，以天藍標記專欄。",
+    "colors": {
+      "canvas": "#F6EBF2",
+      "surface": "#FBF5FA",
+      "text": "#30152D",
+      "muted": "#705169",
+      "primary": "#982655",
+      "onPrimary": "#F8F7FC",
+      "accent": "#93B9DA",
+      "onAccent": "#1A1920"
+    }
+  },
+  {
+    "id": "indigo-print",
+    "name": "群青印刷",
+    "category": "品牌編輯",
+    "mode": "淺色",
+    "description": "群青配柿橙，適合展覽日期、海報標題與報名入口。",
+    "colors": {
+      "canvas": "#E8EBF9",
+      "surface": "#F5F6FC",
+      "text": "#191C3B",
+      "muted": "#515776",
+      "primary": "#303E91",
+      "onPrimary": "#F8F7FC",
+      "accent": "#E6A16A",
+      "onAccent": "#1A1920"
+    }
+  },
+  {
+    "id": "saffron",
+    "name": "番紅花",
+    "category": "商店生活",
+    "mode": "淺色",
+    "description": "以番紅花黃托住深字，莓紅留給價格與按鈕。",
+    "colors": {
+      "canvas": "#F4E6EB",
+      "surface": "#FBF3F6",
+      "text": "#351B28",
+      "muted": "#705363",
+      "primary": "#902F50",
+      "onPrimary": "#F8F7FC",
+      "accent": "#DDAA43",
+      "onAccent": "#1A1920"
+    }
+  },
+  {
+    "id": "harbour",
+    "name": "海港藍",
+    "category": "數位產品",
+    "mode": "淺色",
+    "description": "海藍標示主操作，杏橘帶出摘要區與提示。",
+    "colors": {
+      "canvas": "#E8EFF7",
+      "surface": "#F6F8FC",
+      "text": "#17263D",
+      "muted": "#50647A",
+      "primary": "#185D91",
+      "onPrimary": "#F6F8FC",
+      "accent": "#EDB18B",
+      "onAccent": "#1A1920"
+    }
+  },
+  {
+    "id": "orchid",
+    "name": "蘭花紫",
+    "category": "數位產品",
+    "mode": "淺色",
+    "description": "紫羅蘭搭淡紫底，藍灰支撐設定頁與導覽。",
+    "colors": {
+      "canvas": "#EEEBFA",
+      "surface": "#F8F6FC",
+      "text": "#241935",
+      "muted": "#655777",
+      "primary": "#6543A0",
+      "onPrimary": "#F8F7FC",
+      "accent": "#A8C0DF",
+      "onAccent": "#1A1920"
+    }
+  },
+  {
+    "id": "poppy",
+    "name": "罌粟橘",
+    "category": "商店生活",
+    "mode": "淺色",
+    "description": "暗橙用在價格與購物入口，粉藍襯托商品分區。",
+    "colors": {
+      "canvas": "#F4EAE9",
+      "surface": "#FAF4F5",
+      "text": "#362020",
+      "muted": "#765856",
+      "primary": "#AD4326",
+      "onPrimary": "#F8F7FC",
+      "accent": "#A5C2DE",
+      "onAccent": "#1A1920"
+    }
+  },
+  {
+    "id": "aegean",
+    "name": "愛琴海",
+    "category": "數位產品",
+    "mode": "淺色",
+    "description": "深青色標出操作，琥珀色聚焦摘要數字。",
+    "colors": {
+      "canvas": "#E9ECF3",
+      "surface": "#F5F6FA",
+      "text": "#15292E",
+      "muted": "#4E6369",
+      "primary": "#096572",
+      "onPrimary": "#F8F7FC",
+      "accent": "#D7A64F",
+      "onAccent": "#1A1920"
+    }
+  },
+  {
+    "id": "mulberry",
+    "name": "桑椹墨",
+    "category": "品牌編輯",
+    "mode": "深色",
+    "description": "黑莓底配玫瑰色主標，丁香紫帶出引言。",
+    "colors": {
+      "canvas": "#251727",
+      "surface": "#322036",
+      "text": "#F2DFED",
+      "muted": "#C9ABBF",
+      "primary": "#E8A6C2",
+      "onPrimary": "#1A1920",
+      "accent": "#AAA4D6",
+      "onAccent": "#1A1920"
+    }
+  },
+  {
+    "id": "sunflower",
+    "name": "向日葵",
+    "category": "品牌編輯",
+    "mode": "深色",
+    "description": "墨黑底上以穀黃標出活動名稱，藍灰放置次要資訊。",
+    "colors": {
+      "canvas": "#1D1D22",
+      "surface": "#28282F",
+      "text": "#F1EFF4",
+      "muted": "#BDBBC8",
+      "primary": "#DAB452",
+      "onPrimary": "#1A1920",
+      "accent": "#90AACB",
+      "onAccent": "#1A1920"
+    }
+  },
+  {
+    "id": "blue-hour",
+    "name": "藍調時刻",
+    "category": "數位產品",
+    "mode": "深色",
+    "description": "深藍底配霧藍操作色，珊瑚粉用於圖表重點。",
+    "colors": {
+      "canvas": "#141D32",
+      "surface": "#222E46",
+      "text": "#E6EBFA",
+      "muted": "#B4C1DB",
+      "primary": "#9FB9ED",
+      "onPrimary": "#1A1920",
+      "accent": "#E8A59B",
+      "onAccent": "#1A1920"
+    }
+  },
+  {
+    "id": "pistachio",
+    "name": "開心果",
+    "category": "商店生活",
+    "mode": "淺色",
+    "description": "開心果綠與葡萄紫在粉底上相襯，適合商品系列。",
+    "colors": {
+      "canvas": "#F4EAF2",
+      "surface": "#FBF5FA",
+      "text": "#35223C",
+      "muted": "#725C76",
+      "primary": "#704287",
+      "onPrimary": "#F8F7FC",
+      "accent": "#B6C47F",
+      "onAccent": "#1A1920"
+    }
+  },
+  {
+    "id": "cherry",
+    "name": "櫻桃紅",
+    "category": "商店生活",
+    "mode": "淺色",
+    "description": "櫻桃紅為新品聚焦，水洗丹寧藍用在分類標籤。",
+    "colors": {
+      "canvas": "#F6E9EF",
+      "surface": "#FBF4F8",
+      "text": "#341C2C",
+      "muted": "#745366",
+      "primary": "#AD254A",
+      "onPrimary": "#F8F7FC",
+      "accent": "#9BAED4",
+      "onAccent": "#1A1920"
+    }
+  },
+  {
+    "id": "cobalt",
+    "name": "鈷藍銀灰",
+    "category": "數位產品",
+    "mode": "淺色",
+    "description": "偏冷的銀灰底搭鈷藍，粉紫標記次要功能。",
+    "colors": {
+      "canvas": "#E6EAF2",
+      "surface": "#F4F6FB",
+      "text": "#1B2034",
+      "muted": "#565F75",
+      "primary": "#304DA3",
+      "onPrimary": "#F8F7FC",
+      "accent": "#D1A6D3",
+      "onAccent": "#1A1920"
+    }
+  },
+  {
+    "id": "tangerine",
+    "name": "橘皮唱片",
+    "category": "品牌編輯",
+    "mode": "深色",
+    "description": "深咖啡底襯橘皮與淡藍，適合唱片、影像與作品集。",
+    "colors": {
+      "canvas": "#291D20",
+      "surface": "#39282B",
+      "text": "#F3E7EB",
+      "muted": "#CEB9C0",
+      "primary": "#E6A374",
+      "onPrimary": "#1A1920",
+      "accent": "#AABEE0",
+      "onAccent": "#1A1920"
+    }
+  },
+  {
+    "id": "marigold",
+    "name": "金盞花",
+    "category": "商店生活",
+    "mode": "淺色",
+    "description": "金色主按鈕搭深墨字，暗紫點綴商品故事。",
+    "colors": {
+      "canvas": "#EDEAF3",
+      "surface": "#F7F5FA",
+      "text": "#271E30",
+      "muted": "#64586E",
+      "primary": "#D5A342",
+      "onPrimary": "#1A1920",
+      "accent": "#6F5389",
+      "onAccent": "#F8F7FC"
+    }
+  },
+  {
+    "id": "cornflower",
+    "name": "矢車菊",
+    "category": "品牌編輯",
+    "mode": "淺色",
+    "description": "矢車菊藍搭豆沙粉，適合長文、專訪與專題索引。",
+    "colors": {
+      "canvas": "#E9ECF7",
+      "surface": "#F5F6FB",
+      "text": "#22273D",
+      "muted": "#57617C",
+      "primary": "#465E9C",
+      "onPrimary": "#F8F7FC",
+      "accent": "#DBACBB",
+      "onAccent": "#1A1920"
+    }
+  }
+]
