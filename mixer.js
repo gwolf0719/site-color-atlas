@@ -6,7 +6,7 @@ import {
   ink,
   ratio,
 } from "./color-rules.mjs";
-import { setupHunt, huntUrl } from "./hunt.js";
+import { huntUrl } from "./hunt.js";
 import { layer, spectrum, safe } from "./spectrum.mjs";
 import {
   LIMIT,
@@ -37,17 +37,6 @@ if (
   names.splice(0, picks.length, ...savedRoles);
 let source = initial.get("hunt");
 if (!/^[a-f0-9]{24}$/i.test(source || "")) source = null;
-export function applyPalette(colors, code = null) {
-  picks = colors.reduce(appendColor, []);
-  names = [...defaults];
-  source = code;
-  page = 0;
-  browseAll = false;
-  updateLink();
-  render();
-  el("mixer").scrollIntoView();
-}
-const updateHunt = setupHunt(applyPalette);
 function mixParams(url) {
   for (const key of ["mix", "style", "roles", "hunt"])
     url.searchParams.delete(key);
@@ -97,6 +86,97 @@ const make = (tag, text) => {
   return node;
 };
 
+function backgroundColor() {
+  return picks[names.slice(0, picks.length).indexOf("背景")]?.hex;
+}
+function setBackground(hex) {
+  if (!safe(hex)) {
+    el("bg-feedback").textContent = "這個色碼在團隊排除範圍，請換一個色碼。";
+    el("custom-bg").value = backgroundColor() || "#191622";
+    return;
+  }
+  const bg = names.slice(0, picks.length).indexOf("背景"),
+    match = picks.findIndex((p) => p.hex === hex);
+  if (bg >= 0) {
+    if (match >= 0 && match !== bg) {
+      picks[match] = { ...picks[match], hex: picks[bg].hex };
+    }
+    picks[bg] = { ...picks[bg], hex };
+  } else if (match >= 0) {
+    names[match] = "背景";
+  } else {
+    if (picks.length === LIMIT) {
+      el("bg-feedback").textContent = "請先在配置表將一色指定為背景。";
+      return;
+    }
+    names[picks.length] = "背景";
+    picks = appendColor(picks, hex);
+  }
+  el("bg-feedback").textContent = "";
+  page = 0;
+  updateLink();
+  render();
+}
+function updateBackground(hex) {
+  const stage = el("wheel-host").parentElement;
+  stage.toggleAttribute("data-selected-bg", Boolean(hex));
+  if (hex) {
+    stage.style.setProperty("--canvas-base", hex);
+    stage.style.setProperty("--canvas-ink", ink(hex));
+    el("custom-bg").value = hex;
+  }
+  if(!hex)el("custom-bg").value="#191622";
+  el("current-bg").textContent = hex ? "底色 " + hex : "底色未指定";
+  for (const b of el("gray-swatches").children) {
+    const selected =
+      el("gray-action").value === "background"
+        ? b.dataset.hex === hex
+        : picks.some((p) => p.hex === b.dataset.hex);
+    b.setAttribute("aria-pressed", String(selected));
+  }
+}
+const grays = [
+  ["黑", "#000000"],
+  ["炭灰", "#242424"],
+  ["深灰", "#404040"],
+  ["鐵灰", "#606060"],
+  ["中灰", "#808080"],
+  ["銀灰", "#A0A0A0"],
+  ["淺灰", "#C8C8C8"],
+  ["淡灰", "#E8E8E8"],
+  ["近白", "#FEFEFE"],
+];
+for (const [name, hex] of grays) {
+  const b = make("button");
+  b.className = "gray-swatch";
+  b.dataset.hex = hex;
+  b.style.setProperty("--swatch", hex);
+  b.title = name + " " + hex;
+  b.setAttribute("aria-label", name + " " + hex);
+  b.onclick = () => {
+    if (el("gray-action").value === "background") {
+      setBackground(hex);
+      return;
+    }
+    if (picks.some((p) => p.hex === hex)) {
+      el("bg-feedback").textContent = "這個灰階已在配置表中。";
+      return;
+    }
+    if (picks.length === LIMIT) {
+      el("bg-feedback").textContent = "目前已選八色。";
+      return;
+    }
+    el("bg-feedback").textContent = "";
+    choose(hex);
+  };
+  el("gray-swatches").append(b);
+}
+el("gray-action").onchange = () => {
+  el("bg-feedback").textContent = "";
+  updateBackground(backgroundColor());
+};
+el("custom-bg").onchange = () =>
+  setBackground(el("custom-bg").value.toUpperCase());
 function hover(candidate) {
   el("hover-code").textContent =
     candidate?.hex || (picks.length === LIMIT ? "100%" : "");
@@ -163,7 +243,7 @@ function refreshOutput() {
         span.title =
           letter(j) + " " + picks[j].hex + " " + picks[j].percent + "%";
       });
-      wheel?.update(options, picks);
+      wheel?.update(options, picks, backgroundColor());
       copyTicket++;
       el("mix-feedback").textContent = "比例已調整，合計 100%。";
     };
@@ -193,11 +273,14 @@ function refreshOutput() {
   for (const id of ["undo", "reset", "copy-mix", "share-mix"])
     el(id).disabled = !picks.length;
   el("mix-empty").hidden = Boolean(picks.length);
-  el("find-hunt").hidden = !picks.length;
+  el("find-hunt").hidden = !names.slice(0,picks.length).includes("主色");
 }
 function render() {
   copyTicket++;
-  const whole = !picks.length || browseAll;
+  const roleSet = names.slice(0, picks.length);
+  const background = picks[roleSet.indexOf("背景")]?.hex;
+  const whole = !roleSet.includes("主色") || browseAll;
+  updateBackground(background);
   const full = picks.length === LIMIT;
   const nextRole =
     defaults.find(
@@ -216,7 +299,10 @@ function render() {
   }
   const primary =
     picks[names.slice(0, picks.length).indexOf("主色")]?.hex || picks[0]?.hex;
-  updateHunt(primary || "", style);
+  const directory = mixParams(new URL("library.html", location.href));
+  el("open-library").href = directory.href;
+  directory.hash = "hunt";
+  el("find-hunt").href = directory.href;
   for (const b of el("directions").children)
     b.setAttribute("aria-pressed", String(b.dataset.style === style));
   el("style-tip").textContent =
@@ -239,12 +325,12 @@ function render() {
   el("more-colors").hidden = whole || full;
   el("more-colors").textContent =
     "下一批推薦（" + (page + 1) + "／" + pages + "）";
-  el("switch-colors").hidden = !picks.length || full;
+  el("switch-colors").hidden = !roleSet.includes("主色") || full;
   el("switch-colors").textContent = whole ? "回推薦配色" : "瀏覽全色環";
   el("brand-color").hidden = full;
   el("hex-feedback").textContent = "";
   hover(null);
-  el("instruction").textContent = !picks.length
+  el("instruction").textContent = !roleSet.includes("主色")
     ? "從 " +
       spectrum.length.toLocaleString("zh-TW") +
       " 個色階挑選主色。切換明度與彩度，或直接點選色環。"
@@ -283,7 +369,7 @@ function render() {
   }
   el("color-choice").disabled = full;
   el("add-color").disabled = full;
-  el("add-color").textContent = picks.length ? "加入搭配色" : "設為主色";
+  el("add-color").textContent = roleSet.includes("主色") ? "加入搭配色" : "設為主色";
   const bands = options.length
     ? options.map((c) => ({ ...c, percent: 100 / options.length }))
     : picks;
@@ -295,7 +381,7 @@ function render() {
   });
   el("ring-fallback").style.background =
     "conic-gradient(" + stops.join(",") + ")";
-  wheel?.update(options, picks);
+  wheel?.update(options, picks, backgroundColor());
   el("mix-feedback").textContent = "";
   refreshOutput();
   rolePreview();
@@ -400,7 +486,7 @@ import("./ring.js")
       wheel = null;
       fallback.hidden = false;
     });
-    wheel.update(options, picks);
+    wheel.update(options, picks, backgroundColor());
     fallback.hidden = true;
   })
   .catch(() => {

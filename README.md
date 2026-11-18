@@ -35,3 +35,5 @@ Color Hunt 公開最新動態在 2026-11-18 依序讀取 108 個非空分頁，�
 
 - `chromatic-scene.js` 產生扭轉色片網格與背景材質。
 - `ring.js` 負責共用畫布、色環點選與動畫時序，`exhibition.css` 定義沉浸首頁與手機編排。
+
+首頁保留動態色環、底色與 AI 配置表。[參考色庫](https://gwolf0719.github.io/site-color-atlas/library.html) 集中 Color Hunt、團隊色卡與使用來源。首頁九階灰色可設為底色或加入配色，自訂底色套用到 WebGL 場景與配置表，分享網址也保留背景角色。

@@ -58,6 +58,8 @@ export function fabric() {
   const tint = new Color("#9869A1").convertLinearToSRGB(),
     target = tint.clone();
   const uniforms = {
+    base: { value: new Color() },
+    explicitBase: { value: 0 },
     time: { value: 0 },
     aspect: { value: 1 },
     scroll: { value: 0 },
@@ -74,7 +76,8 @@ export function fabric() {
     fragmentShader: `
     varying vec2 vUv;
     uniform float time,aspect,scroll,pulse;
-    uniform vec3 tint;
+    uniform vec3 tint,base;
+    uniform float explicitBase;
     uniform vec2 pointer;
     void main(){
       vec2 uv=vUv;
@@ -99,7 +102,10 @@ export function fabric() {
       col+=tint*.115*exp(-dist*2.2);
       col+=tint*.065*pulse*exp(-abs(dist-(1.-pulse)*1.3)*22.);
       col*=.84+.16*smoothstep(0.,.65,uv.x);
-      gl_FragColor=vec4(col,1.);
+      vec3 relief=col-vec3(.08,.07,.11);
+      float brightness=dot(base,vec3(.2126,.7152,.0722));
+      vec3 applied=clamp(base+(1.-2.*brightness)*relief*.42,vec3(0.),vec3(.996));
+      gl_FragColor=vec4(mix(col,applied,explicitBase),1.);
     }`.replace("smoothstep(.13,-.12,d)", "(1.-smoothstep(-.12,.13,d))"),
   });
   const plane = new Mesh(new PlaneGeometry(2, 2), material);
@@ -107,7 +113,9 @@ export function fabric() {
   scene.add(plane);
   return {
     scene,
-    setColor(hex) {
+    setColor(hex, background) {
+      uniforms.explicitBase.value = background ? 1 : 0;
+      if (background) uniforms.base.value.set(background).convertLinearToSRGB();
       target.set(hex).convertLinearToSRGB();
     },
     frame(time, aspect, scroll, pulse, x, y, still) {

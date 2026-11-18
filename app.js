@@ -1,4 +1,28 @@
-import { applyPalette } from "./mixer.js";
+import { setupHunt } from "./hunt.js";
+import { appendColor, decode, encode } from "./mixer-data.mjs";
+import { roles, defaults } from "./color-rules.mjs";
+function homeURL() {
+  const u = new URL("./", location.href);
+  for (const key of ["mix", "style", "roles", "hunt"]) {
+    if (params.has(key)) u.searchParams.set(key, params.get(key));
+  }
+  return u;
+}
+function applyPalette(colors, code = null) {
+  const u = homeURL(),
+    picks = colors.reduce(appendColor, []);
+  u.searchParams.set("mix", encode(picks));
+  u.searchParams.set(
+    "roles",
+    defaults
+      .slice(0, picks.length)
+      .map((r) => roles.indexOf(r))
+      .join(""),
+  );
+  if (code) u.searchParams.set("hunt", code);
+  else u.searchParams.delete("hunt");
+  location.assign(u.href);
+}
 const byId = (id) => document.getElementById(id);
 const labels = {
   canvas: "頁面底色",
@@ -154,6 +178,13 @@ function renderDetail() {
   renderDemo();
 }
 async function init() {
+  byId("return-mixer").href = homeURL().href;
+  const current = decode(params.get("mix"));
+  const primaryIndex = (params.get("roles") || "1").indexOf("1");
+  setupHunt(applyPalette)(
+    current[primaryIndex]?.hex || "",
+    params.get("style") === "bold" ? "bold" : "calm",
+  );
   const response = await fetch("./palettes.json?v=c49faa2");
   if (!response.ok) throw Error("載入失敗");
   palettes = await response.json();

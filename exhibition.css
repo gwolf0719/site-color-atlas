@@ -356,3 +356,130 @@ main > section:not(#mixer),
     }
   }
 }
+.background-settings {
+  margin: 14px 0 7px;
+  color: var(--ex-dim);
+}
+.background-line {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+  font-size: 0.86rem;
+}
+.background-line label,
+.custom-background {
+  color: inherit;
+}
+.background-line select {
+  min-height: 32px;
+  font-size: 0.85rem;
+  padding: 3px 7px;
+  border: 1px solid currentColor;
+  border-radius: 3px;
+  background: var(--ex-night);
+  color: var(--ex-ink);
+}
+#current-bg {
+  font:
+    12px/1.5 ui-monospace,
+    monospace;
+}
+.custom-background {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.8rem;
+  min-height: 32px;
+  cursor: pointer;
+}
+.custom-background input {
+  width: 30px;
+  height: 24px;
+  background: transparent;
+  border: 1px solid currentColor;
+  border-radius: 3px;
+  padding: 1px;
+  cursor: pointer;
+}
+#gray-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-top: 4px;
+}
+.gray-swatch {
+  width: 32px;
+  min-height: 36px;
+  padding: 4px;
+  background: transparent;
+  color: inherit;
+  border: 0;
+  display: grid;
+  place-items: center;
+}
+.gray-swatch::after {
+  content: "";
+  display: block;
+  width: 22px;
+  height: 22px;
+  border: 1px solid #89858d;
+  border-radius: 50%;
+  background: var(--swatch);
+}
+.gray-swatch[aria-pressed="true"]::after,
+.gray-swatch:hover::after {
+  outline: 1px solid currentColor;
+  outline-offset: 2px;
+}
+#bg-feedback {
+  font-size: 0.8rem;
+}
+.stage[data-selected-bg] {
+  background: var(--canvas-base);
+  --ex-ink: var(--canvas-ink);
+  --ex-dim: var(--canvas-ink);
+}
+.stage[data-selected-bg]
+  :is(
+    h1,
+    h1 em,
+    #instruction,
+    .hub,
+    .hub span,
+    .downlink,
+    .directions button,
+    #style-tip,
+    .background-settings,
+    #precision > summary,
+    #find-hunt,
+    .mix-browse button
+  ) {
+  color: var(--canvas-ink);
+}
+.stage[data-selected-bg] .directions button[aria-pressed="true"] {
+  border-color: var(--canvas-ink);
+}
+.stage[data-selected-bg] .precision-inside {
+  background: #211e2c;
+  color: #e9e4ee;
+}
+.stage[data-selected-bg] .background-line select {
+  color: var(--canvas-ink);
+  background: var(--canvas-base);
+}
+@media (max-width: 700px) {
+  .background-settings {
+    margin: 6px 0 3px;
+  }
+  .gray-swatch {
+    width: 29px;
+    min-height: 32px;
+  }
+  .gray-swatch::after {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.stage[data-selected-bg] .background-settings label{color:var(--canvas-ink)}

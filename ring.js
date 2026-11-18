@@ -108,7 +108,7 @@ export function createWheel(host, onChoose, onHover, onLoss) {
   }
   const ratioBand = new Group();
   rig.add(ratioBand);
-  function update(values, picks) {
+  function update(values, picks, background) {
     for (const segment of [...ratioBand.children]) {
       ratioBand.remove(segment);
       segment.geometry.dispose();
@@ -132,7 +132,7 @@ export function createWheel(host, onChoose, onHover, onLoss) {
       ratioBand.add(segment);
       startAngle -= arc;
     }
-    backdrop.setColor(picks.at(-1)?.hex || "#9869A1");
+    backdrop.setColor(picks.at(-1)?.hex || "#9869A1", background);
     clearWedges();
     options = values;
     active = null;
