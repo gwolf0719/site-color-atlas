@@ -13,7 +13,6 @@ const labels = {
 };
 const categories = ["全部", "品牌編輯", "數位產品", "商店生活"];
 const params = new URLSearchParams(location.search);
-let view = params.get("view") === "system" ? "system" : "site";
 let category = "全部";
 let palettes = [];
 let selected;
@@ -46,7 +45,7 @@ function paintBars(container, palette) {
 function selectionUrl() {
   const url = new URL(location.href);
   url.searchParams.set("palette", selected.id);
-  url.searchParams.set("view", view);
+  url.searchParams.delete("view");
   url.hash = "preview";
   return url;
 }
@@ -78,7 +77,9 @@ function renderCards() {
     bindPreview(
       card,
       () => previewGroup([c.primary, c.canvas, c.accent, c.text]),
-      () => previewGroup(null),
+      () => {
+        if (byId("preview").hidden) previewGroup(null);
+      },
     );
     card.onclick = () => {
       selected = palette;
@@ -93,11 +94,6 @@ function renderCards() {
     catalog.append(element("p", "這個條件目前沒有色卡，請切換用途或明暗。"));
 }
 
-const website =
-  '<div class="mocknav"><strong>在地編輯室</strong><span>地方誌　／　專題</span></div><div class="feature"><div><h4>沿著海線，<br>讀一座城。</h4><p>從港口的第一班渡輪，走進巷弄裡的老書店。</p><span class="mock-action">閱讀專題 ↗</span></div><div class="issue"><span class="mock-tag">秋季特刊</span><strong lang="en">Coast</strong><span>海岸線採集誌</span></div></div>';
-const dashboard =
-  '<div class="mocknav"><strong>專案總覽</strong><span class="mock-action">新增專案 ＋</span></div><div class="stats"><div class="stat"><p>進行中專案</p><b>12</b></div><div class="stat"><p>本週已交付</p><b>08</b></div><div class="stat"><p>待確認項目</p><span class="mock-tag">3 件待審</span></div></div>';
-
 function luminance(hex) {
   const channels = hex
     .slice(1)
@@ -111,11 +107,6 @@ function contrast(first, second) {
     (a, b) => a - b,
   );
   return ((high + 0.05) / (low + 0.05)).toFixed(2);
-}
-function renderDemo() {
-  byId("demo").innerHTML = view === "site" ? website : dashboard;
-  for (const button of byId("views").children)
-    pressed(button, button.dataset.view === view);
 }
 async function copy(value, result) {
   try {
@@ -134,7 +125,7 @@ function renderDetail() {
   byId("tokens").replaceChildren();
   for (const [key, label] of Object.entries(labels)) {
     const color = colors[key];
-    byId("demo").style.setProperty("--" + key, color);
+
     const button = element("button", null, "token");
     const chip = element("span", null, "chip");
     chip.style.backgroundColor = color;
@@ -153,7 +144,8 @@ function renderDetail() {
     "∶1　·　點綴標籤 " +
     contrast(colors.onAccent, colors.accent) +
     "∶1";
-  renderDemo();
+  if (sheet.open && !byId("preview").hidden)
+    previewGroup([colors.primary, colors.canvas, colors.accent, colors.text]);
 }
 async function loadTeam(applyPalette) {
   const response = await fetch("./palettes.json?v=c49faa2");
@@ -180,12 +172,6 @@ async function loadTeam(applyPalette) {
     cardLimit += 16;
     renderCards();
   };
-  for (const button of byId("views").children)
-    button.onclick = () => {
-      view = button.dataset.view;
-      renderDemo();
-      byId("feedback").textContent = "";
-    };
   byId("use-card").onclick = () => {
     const c = selected.colors;
     applyPalette([c.primary, c.canvas, c.accent, c.text]);
@@ -212,7 +198,6 @@ async function loadTeam(applyPalette) {
 const sheet = byId("catalog-sheet");
 function showPanel(name) {
   previewGroup(null);
-  byId("catalog-proof").hidden = !["hunt", "library"].includes(name);
 
   for (const section of sheet.querySelectorAll("section"))
     section.hidden = section.id !== name;
@@ -221,6 +206,10 @@ function showPanel(name) {
       button,
       button.dataset.panel === (name === "preview" ? "library" : name),
     );
+  if (name === "preview" && selected) {
+    const c = selected.colors;
+    previewGroup([c.primary, c.canvas, c.accent, c.text]);
+  }
   sheet.scrollTop = 0;
 }
 
@@ -243,7 +232,6 @@ export function setupCatalog(applyPalette, context, preview) {
     }
   }
   function reset() {
-    view = "site";
     category = "全部";
     cardLimit = 16;
     byId("mode").selectedIndex = 0;

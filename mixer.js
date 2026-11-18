@@ -1,7 +1,7 @@
 import {
   nextRole,
   backgroundSample,
-  sketch,
+  paintDesk,
   bindPreview,
 } from "./live-proof.mjs";
 import {
@@ -40,11 +40,22 @@ let picks = decode(requested);
 const initial = new URL(location.href).searchParams;
 let businessUse = Object.hasOwn(contexts, initial.get("use"))
   ? initial.get("use")
-  : "brand";
+  : initial.get("view") === "system"
+    ? "system"
+    : "brand";
 let chromaTrial = false;
 el("business-use").value = businessUse;
 function businessProof() {
-  renderCommercial(picks, names, businessUse, chromaTrial);
+  const variant = renderCommercial(picks, names, businessUse, chromaTrial);
+  if (el("recipe-sheet").open) {
+    const primary = names.indexOf("主色");
+    paintDesk(
+      variant
+        ? picks.map((p, i) => (i === primary ? { ...p, hex: variant } : p))
+        : picks,
+      names,
+    );
+  }
 }
 el("business-use").onchange = () => {
   businessUse = el("business-use").value;
@@ -261,10 +272,7 @@ function trialProof(hex, action = "add", group) {
     stage.style.setProperty("--trial-ink", ink(bg));
   }
   wheel?.setBackdrop(bg);
-  stage.toggleAttribute("data-proof", Boolean(sample.length));
-  const label = caption || (sample.length ? "目前配色" : "移到色卡上試放");
-  sketch(el("live-proof"), sample, sampleRoles, businessUse, label, role);
-  sketch(el("catalog-proof"), sample, sampleRoles, businessUse, label, role);
+  paintDesk(sample, sampleRoles, role === "其他" ? hex : null);
 }
 function hover(candidate, show = false, action = "add") {
   el("hover-code").textContent = candidate?.hex || "";
@@ -282,23 +290,19 @@ function pointAtChosen(e) {
   if (!chip || pinned || trial) return;
   const i = picks.findIndex((p) => p.hex === chip.dataset.removeHex);
   if (i < 0) return;
-  sketch(
-    el("live-proof"),
-    picks,
-    names,
-    businessUse,
-    names[i] + " " + picks[i].hex + " · " + picks[i].percent + "%",
-    names[i],
-  );
+  el("hover-code").textContent = names[i] + " " + picks[i].hex;
+  paintDesk(picks, names, names[i] === "其他" ? picks[i].hex : null);
 }
 strip.addEventListener("pointerover", pointAtChosen);
 strip.addEventListener("focusin", pointAtChosen);
-function restoreSketch() {
-  if (!pinned && !trial)
-    sketch(el("live-proof"), picks, names, businessUse, "目前配色");
+function restoreDesk() {
+  if (!pinned && !trial) {
+    el("hover-code").textContent = "";
+    paintDesk(picks, names);
+  }
 }
-strip.addEventListener("pointerleave", restoreSketch);
-strip.addEventListener("focusout", restoreSketch);
+strip.addEventListener("pointerleave", restoreDesk);
+strip.addEventListener("focusout", restoreDesk);
 function endTrial() {
   pinned = false;
   trial = null;
@@ -682,7 +686,10 @@ const catalog = setupCatalog(
 );
 
 el("open-library").onclick = el("find-hunt").onclick = () => catalog.open();
-el("open-recipe").onclick = () => el("recipe-sheet").showModal();
+el("open-recipe").onclick = () => {
+  endTrial();
+  el("recipe-sheet").showModal();
+};
 for (const button of document.querySelectorAll("[data-close]"))
   button.onclick = () => button.closest("dialog").close();
 function resetDesk() {
@@ -751,6 +758,7 @@ render();
 el("recipe-sheet").addEventListener("close", () => {
   chromaTrial = false;
   businessProof();
+  endTrial();
 });
 const panel = location.hash.slice(1);
 if (["hunt", "library", "preview", "sources"].includes(panel))

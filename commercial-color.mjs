@@ -4,24 +4,15 @@ import { ink } from "./color-rules.mjs";
 export const contexts = {
   brand: {
     name: "品牌官網",
-    title: "山徑編輯室",
-    detail: "地方文化與獨立出版",
-    action: "閱讀本期",
-    usage: "主色重複用在識別標記與刊名區，讓不同頁面使用同一個品牌線索。",
+    usage: "主色重複用在品牌識別與主標題，讓不同頁面使用同一個品牌線索。",
   },
   shop: {
     name: "商品導購",
-    title: "山徑散步誌",
-    detail: "紙本季刊　NT$ 320",
-    action: "加入購物車",
     usage:
       "主色集中在購買按鈕，同畫面的次要連結採正文色與底線，讓主要行動有清楚的層級。",
   },
   system: {
     name: "資訊系統",
-    title: "訂單處理",
-    detail: "待確認 · 3 筆",
-    action: "檢視訂單",
     usage: "主色標記目前操作，狀態同時使用文字與數量，讓使用者也能從字義判讀。",
   },
 };
@@ -88,21 +79,11 @@ export function renderCommercial(picks, names, context, compare) {
   const saved = brief(picks, names, context);
   const alternate = compare && variant && saved.bg;
   const shown = alternate ? brief(picks, names, context, variant) : saved;
-  const preview = id("business-sample");
-  preview.hidden = !saved.bg;
+
   id("chroma-tools").hidden = !saved.bg || !variant;
   id("try-chroma").textContent = alternate ? "看原主色" : "試看較低彩度";
   id("try-chroma").setAttribute("aria-pressed", String(Boolean(alternate)));
   id("apply-chroma").hidden = !alternate;
   id("business-note").textContent = shown.lines.slice(1).join(" ");
-  if (!saved.bg) return;
-  preview.dataset.scene = context;
-  for (const key of ["bg", "body", "accent", "onAccent", "edge"])
-    preview.style.setProperty("--sample-" + key, shown[key]);
-  id("sample-title").textContent = shown.use.title;
-  id("sample-detail").textContent = shown.use.detail;
-  id("sample-action").textContent = shown.use.action;
-  id("sample-state").textContent = alternate
-    ? "試放主色 " + variant
-    : "目前主色 " + saved.accent;
+  return alternate ? variant : null;
 }

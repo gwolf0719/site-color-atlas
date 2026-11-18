@@ -203,53 +203,6 @@ body > header {
   border: 1px solid var(--rule);
   padding: 5px 9px;
 }
-#business-sample {
-  display: grid;
-  gap: 6px;
-  margin-top: 10px;
-  background: var(--sample-bg);
-  color: var(--sample-body);
-  border: 1px solid var(--rule);
-  padding: 16px;
-}
-#sample-state {
-  font:
-    12px/1.5 ui-monospace,
-    monospace;
-}
-#sample-title {
-  font:
-    700 clamp(1.4rem, 4vw, 2.2rem) / 1.2 "Songti TC",
-    "Noto Serif TC",
-    serif;
-}
-#sample-detail {
-  font-size: 0.88rem;
-}
-#sample-action {
-  width: fit-content;
-  padding: 6px 12px;
-  background: var(--sample-accent);
-  color: var(--sample-onAccent);
-  border: 1px solid var(--sample-edge);
-}
-#business-sample[data-scene="brand"] #sample-title {
-  width: fit-content;
-  padding: 4px 10px;
-  background: var(--sample-accent);
-  color: var(--sample-onAccent);
-}
-#business-sample[data-scene="brand"] #sample-action {
-  background: transparent;
-  color: var(--sample-body);
-  border: 0;
-  padding: 3px 0;
-  text-decoration: underline;
-}
-#business-sample[data-scene="system"] #sample-detail {
-  border-left: 5px solid var(--sample-accent);
-  padding-left: 7px;
-}
 #chroma-tools {
   display: flex;
   gap: 6px;
@@ -262,15 +215,6 @@ body > header {
   line-height: 1.6;
 }
 
-#business-sample[data-scene="brand"] #sample-state::before {
-  content: "";
-  display: inline-block;
-  width: 1em;
-  height: 0.8em;
-  margin-right: 0.5em;
-  background: var(--sample-accent);
-  border: 1px solid var(--sample-edge);
-}
 #proof-strip button,
 #proportion button {
   appearance: none;
@@ -295,112 +239,57 @@ body > header {
   padding: 0;
   border: 1px solid #777780;
 }
-.intro-frame {
-  position: relative;
-  display: flow-root;
-}
-.mini-page {
-  min-width: 0;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-content: center;
-  align-items: center;
-  gap: 8px;
-  border: 1px solid color-mix(in srgb, var(--on-bg) 48%, var(--mini-bg));
-  background: var(--mini-bg);
-  color: var(--on-bg);
-  padding: clamp(12px, 2vw, 25px);
-}
-.mini-page small {
-  grid-column: 1/-1;
-  font:
-    12px/1.3 ui-monospace,
-    monospace;
-}
-.mini-page strong {
-  grid-column: 1/-1;
-  font:
-    700 clamp(26px, 3.5vw, 54px) / 1.12 "Songti TC",
-    "Noto Serif TC",
-    serif;
-}
-.mini-page[data-use="brand"] strong {
-  width: fit-content;
-  padding: 3px 6px;
-  background: var(--mini-primary);
-  color: var(--on-primary);
-}
-.mini-tag,
-.mini-action {
-  width: fit-content;
-  padding: 5px 8px;
-  font-size: 0.83rem;
-  line-height: 1.25;
-}
-.mini-tag {
-  background: var(--mini-secondary);
-  color: var(--on-secondary);
-}
-.mini-action {
-  background: var(--mini-primary);
-  color: var(--on-primary);
-}
-.mini-marks {
-  grid-column: 1/-1;
-  display: flex;
-  gap: 5px;
-  height: 5px;
-}
-.mini-marks i {
-  display: block;
-  width: 28px;
-  height: 100%;
-  border: 1px solid color-mix(in srgb, var(--on-bg) 28%, transparent);
-}
-#live-proof {
-  position: absolute;
-  inset: 4px 0;
-  max-width: 380px;
-  pointer-events: none;
-  visibility: hidden;
-}
-.stage[data-proof] #live-proof {
-  visibility: visible;
-}
-.stage[data-proof] .intro-frame :is(h1, #instruction) {
-  opacity: 0;
-}
-#catalog-proof {
-  position: sticky;
-  top: 72px;
-  z-index: 2;
-  padding: 9px 12px;
-  gap: 4px;
-  margin-top: 5px;
-}
-#catalog-proof strong {
-  font-size: 1.42rem;
-}
-#catalog-proof .mini-marks {
-  height: 4px;
-}
-@media (max-width: 760px) {
-  .intro-frame {
-    min-height: 130px;
-  }
-  #live-proof {
-    padding: 9px 12px;
-    gap: 4px;
-  }
-  #live-proof strong {
-    font-size: 1.5rem;
-  }
-}
 
-.mini-page[data-role="背景"],
-.mini-page[data-role="主色"] .mini-action,
-.mini-page[data-role="輔助色"] .mini-tag,
-.mini-page[data-role="其他"] .mini-marks i:last-child {
-  outline: 1px dashed var(--on-bg);
-  outline-offset: 2px;
+/* 角色直接著色在原有頁面，色卡本身始終保留來源色。 */
+:root[data-color-bg] {
+  --paper: var(--desk-bg);
+  --ink: var(--on-desk-bg);
+  --soft: var(--on-desk-bg);
+  --rule: color-mix(in srgb, var(--ink) 44%, var(--paper));
+}
+[data-color-primary] .stage .directions button[aria-pressed="true"],
+[data-color-primary] .desk-actions #quick-copy:enabled,
+[data-color-primary] .catalog-options button[aria-pressed="true"],
+[data-color-primary] .pills button[aria-pressed="true"],
+[data-color-primary] .send-row #copy-mix:enabled,
+[data-color-primary] #use-card,
+[data-color-primary] #try-chroma[aria-pressed="true"] {
+  background: var(--desk-primary);
+  color: var(--on-desk-primary);
+  border-color: currentColor;
+}
+[data-color-primary] .head .mark {
+  background: var(--desk-primary);
+}
+[data-color-primary] #mix-title em {
+  text-decoration: underline var(--desk-primary) 0.06em;
+  text-underline-offset: 0.09em;
+}
+[data-ink-primary] #mix-title em {
+  color: var(--desk-primary);
+  text-decoration: none;
+}
+[data-color-primary] .sheet-head {
+  border-bottom: 3px solid var(--desk-primary);
+}
+[data-color-secondary] #hub-letter,
+[data-color-secondary] .desk-actions #open-recipe,
+[data-color-secondary] .sheet-head [data-close] {
+  background: var(--desk-secondary);
+  color: var(--on-desk-secondary);
+}
+[data-color-secondary] .head .mark {
+  box-shadow:
+    4px 1px var(--desk-secondary),
+    8px 3px var(--desk-accent, var(--ink));
+}
+[data-color-accent] body > header {
+  box-shadow: inset 0 -3px var(--desk-accent);
+}
+[data-color-accent] #precision summary {
+  text-decoration: underline var(--desk-accent) 0.18em;
+  text-underline-offset: 0.3em;
+}
+[data-color-accent] .sheet-head {
+  box-shadow: inset 0 -2px var(--desk-accent);
 }

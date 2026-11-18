@@ -1,6 +1,6 @@
 import { appendColor, LIMIT } from "./mixer-data.mjs";
 import { defaults, ink } from "./color-rules.mjs";
-import { contexts } from "./commercial-color.mjs";
+import { ratio } from "./spectrum.mjs";
 
 export function nextRole(picks, names) {
   const used = names.slice(0, picks.length);
@@ -29,33 +29,35 @@ export function backgroundSample(picks, names, hex) {
   return { picks: appendColor(picks, hex), roles: [...roles, "背景"] };
 }
 
-export function sketch(box, picks, names, use, caption, role = "") {
-  box.dataset.role = role;
-  const roleColors = names.slice(0, picks.length);
-  const value = (role, base) => picks[roleColors.indexOf(role)]?.hex || base;
-  const bg = value("背景", "#ECECF1"),
-    primary = value("主色", "#515366"),
-    secondary = value("輔助色", "#D1D0DA");
-  for (const [key, hex] of Object.entries({ bg, primary, secondary })) {
-    box.style.setProperty("--mini-" + key, hex);
-    box.style.setProperty("--on-" + key, ink(hex));
+// 暫放與已選配色使用同一組 CSS 變數；編輯器的結構與文案保持固定。
+export function paintDesk(picks, names, accentOverride) {
+  const root = document.documentElement;
+  const assigned = names.slice(0, picks.length);
+  const value = (role) => picks[assigned.indexOf(role)]?.hex;
+  const bg = value("背景"),
+    primary = value("主色"),
+    secondary = value("輔助色");
+  const accents = picks
+    .filter((p, i) => assigned[i] === "其他")
+    .map((p) => p.hex);
+  const accent = accentOverride || accents.at(-1);
+  for (const [key, hex] of Object.entries({ bg, primary, secondary, accent })) {
+    root.toggleAttribute("data-color-" + key, Boolean(hex));
+    if (hex) {
+      root.style.setProperty("--desk-" + key, hex);
+      root.style.setProperty("--on-desk-" + key, ink(hex));
+    } else {
+      root.style.removeProperty("--desk-" + key);
+      root.style.removeProperty("--on-desk-" + key);
+    }
   }
-  box.dataset.use = use;
-  box.querySelector("small").textContent = caption;
-  box.querySelector("strong").textContent = contexts[use].title;
-  box.querySelector(".mini-tag").textContent = contexts[use].detail;
-  box.querySelector(".mini-action").textContent = contexts[use].action;
-  box.querySelector(".mini-marks").replaceChildren(
-    ...picks
-      .filter((p, i) => roleColors[i] === "其他")
-      .map((p) => {
-        const mark = document.createElement("i");
-        mark.style.backgroundColor = p.hex;
-        return mark;
-      }),
+  // 大標題可讀時直接上色；明度接近時，用同色下劃線呈現選色。
+  const surface = bg || "#D9DCE5";
+  root.toggleAttribute(
+    "data-ink-primary",
+    Boolean(primary && ratio(primary, surface) >= 3),
   );
 }
-
 // 滑鼠立即試放，鍵盤焦點與觸控長按共用相同的資料路徑。
 let activeButton;
 export function bindPreview(button, onEnter, onLeave) {
