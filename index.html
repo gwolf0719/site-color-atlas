@@ -3,17 +3,29 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <meta name="theme-color" content="#F8F7FA" />
-    <title>配色標本室｜網站與系統色卡</title>
+    <meta name="theme-color" content="#191622" />
+    <title>配色標本室｜互動色環</title>
     <meta
       name="description"
-      content="並排挑選團隊網站色卡，預覽官網與後台，分享選色連結與 CSS 變數。"
+      content="點選立體色環，探索協調或鮮明高反差的配色，將色碼與面積比例整段複製給 AI。"
     />
-    <link rel="stylesheet" href="style.css" />
-    <link rel="stylesheet" href="mixer.css" />
-    <link rel="stylesheet" href="exhibition.css" />
-    <script type="module" src="mixer.js"></script>
-    <script type="module" src="app.js"></script>
+    <link rel="stylesheet" href="style.css?v=c49faa2" />
+    <link rel="stylesheet" href="mixer.css?v=c49faa2" />
+    <link rel="stylesheet" href="exhibition.css?v=c49faa2" />
+    <script type="importmap">{
+  "imports": {
+    "./app.js": "./app.js?v=c49faa2",
+    "./mixer.js": "./mixer.js?v=c49faa2",
+    "./mixer-data.mjs": "./mixer-data.mjs?v=c49faa2",
+    "./spectrum.mjs": "./spectrum.mjs?v=c49faa2",
+    "./color-rules.mjs": "./color-rules.mjs?v=c49faa2",
+    "./hunt.js": "./hunt.js?v=c49faa2",
+    "./ring.js": "./ring.js?v=c49faa2",
+    "./chromatic-scene.js": "./chromatic-scene.js?v=c49faa2",
+    "./vendor/three.js": "./vendor/three.js?v=c49faa2"
+  }
+}</script>
+    <script type="module" src="app.js?v=c49faa2"></script>
   </head>
   <body>
     <header>

@@ -154,7 +154,7 @@ function renderDetail() {
   renderDemo();
 }
 async function init() {
-  const response = await fetch("./palettes.json");
+  const response = await fetch("./palettes.json?v=c49faa2");
   if (!response.ok) throw Error("載入失敗");
   palettes = await response.json();
   selected =

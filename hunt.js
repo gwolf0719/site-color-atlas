@@ -88,7 +88,7 @@ export function setupHunt(apply) {
     }
   };
   id("hunt-order").onchange = rank;
-  fetch("./colorhunt.json")
+  fetch("./colorhunt.json?v=c49faa2")
     .then((r) => {
       if (!r.ok) throw Error("HTTP " + r.status);
       return r.json();
