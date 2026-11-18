@@ -268,3 +268,198 @@
     transition: none;
   }
 }
+.tone-controls,
+.mix-browse,
+#hex-form {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.tone-controls {
+  margin-bottom: 12px;
+}
+.tone-controls label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.tone-controls select,
+.mix-browse button,
+#hex-form button,
+#custom-hex {
+  background: #302c3d;
+  color: #f6f3fa;
+  border: 1px solid #827b90;
+  border-radius: 5px;
+  min-height: 40px;
+  padding: 6px 10px;
+}
+.mix-browse {
+  margin-top: 8px;
+}
+.mix-browse button {
+  font-size: 0.85rem;
+}
+.tone-controls[hidden],
+.mix-browse :is(button)[hidden] {
+  display: none;
+}
+#brand-color {
+  margin-top: 10px;
+  font-size: 0.86rem;
+  color: #d1cbdd;
+}
+#brand-color summary {
+  padding-block: 8px;
+  cursor: pointer;
+}
+#custom-hex {
+  font-weight: 400;
+  width: 8em;
+}
+#hex-feedback {
+  display: block;
+  margin-top: 5px;
+}
+#recommendations {
+  gap: 5px;
+}
+.rec {
+  min-height: 36px;
+  font-size: 0.77rem;
+}
+.more-cards {
+  display: block;
+  margin: 15px auto 0;
+  background: transparent;
+  padding: 10px 16px;
+  border: 1px solid var(--rule);
+  border-radius: 5px;
+}
+.more-cards[hidden] {
+  display: none;
+}
+.directions {
+  display: flex;
+  gap: 5px;
+}
+.directions button {
+  background: #302c3d;
+  color: #f6f3fa;
+  border: 1px solid #827b90;
+  border-radius: 5px;
+  min-height: 42px;
+  padding: 7px 14px;
+}
+.directions button[aria-pressed="true"] {
+  background: #dcc9e6;
+  color: #2a1c31;
+}
+.stage #style-tip {
+  font-size: 0.86rem;
+  line-height: 1.55;
+  color: #d1cbdd;
+  margin: 7px 0 14px;
+}
+.allocation select {
+  font-size: 0.84rem;
+  padding: 4px;
+  min-height: 36px;
+  max-width: 95px;
+}
+#role-preview {
+  margin-top: 12px;
+}
+.role-example {
+  background: var(--bg);
+  color: var(--ink-bg);
+  border-left: 8px solid var(--secondary);
+  padding: 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  border-radius: 4px;
+}
+.role-example strong {
+  font-size: 1.35rem;
+}
+.role-tag {
+  background: var(--accent);
+  color: var(--ink-accent);
+  padding: 3px 7px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+}
+.role-button {
+  background: var(--primary);
+  color: var(--ink-primary);
+  padding: 7px 12px;
+  margin-left: auto;
+  border-radius: 4px;
+}
+#role-contrast,
+#hunt-status {
+  font-size: 0.88rem;
+  color: var(--soft);
+  line-height: 1.6;
+  margin-top: 8px;
+}
+.hunt-card {
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  padding: 7px;
+  position: relative;
+}
+.hunt-select {
+  width: 100%;
+  text-align: left;
+  display: grid;
+  gap: 8px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+.hunt-select > span:last-child {
+  padding: 5px;
+  font-size: 0.9rem;
+  font-weight: 650;
+}
+.hunt-card a {
+  position: absolute;
+  right: 8px;
+  bottom: 4px;
+  padding: 8px;
+}
+.hunt-strip {
+  display: flex;
+  height: 63px;
+  overflow: hidden;
+  border-radius: 3px;
+}
+.hunt-strip i {
+  flex: 1;
+}
+.hunt-pages {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  align-items: center;
+  margin: 12px 0;
+}
+.hunt-pages button {
+  padding: 8px 12px;
+  background: transparent;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+}
+.hunt-pages button:disabled {
+  color: var(--soft);
+}
+#find-hunt {
+  font-size: 0.87rem;
+  min-height: 40px;
+  line-height: 40px;
+  padding-inline: 5px;
+}

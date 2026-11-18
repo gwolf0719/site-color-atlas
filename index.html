@@ -21,8 +21,8 @@
           ><i class="mark" aria-hidden="true"></i>配色標本室</a
         >
         <nav aria-label="主導覽">
-          <a href="#mixer">色環</a><a href="#library">色卡庫</a
-          ><a href="#preview">試色台</a>
+          <a href="#mixer">色環</a><a href="#hunt">Color Hunt</a
+          ><a href="#library">團隊色卡</a>
         </nav>
       </div>
     </header>
@@ -33,12 +33,64 @@
             <h1 id="mix-title">色環配色台</h1>
             <p id="instruction"></p>
             <div class="choice-area">
+              <div
+                id="directions"
+                class="directions"
+                role="group"
+                aria-label="配色方向"
+              >
+                <button data-style="calm" aria-pressed="true">協調</button
+                ><button data-style="bold" aria-pressed="false">
+                  鮮明高反差
+                </button>
+              </div>
+              <p id="style-tip"></p>
+              <div id="tones" class="tone-controls">
+                <label
+                  >明度
+                  <select id="lightness">
+                    <option value="18">極深</option>
+                    <option value="29">深色</option>
+                    <option value="40" selected>中深</option>
+                    <option value="50">中等</option>
+                    <option value="62">明亮</option>
+                    <option value="74">淺色</option>
+                  </select></label
+                ><label
+                  >彩度
+                  <select id="saturation">
+                    <option value="16">灰調</option>
+                    <option value="30">柔和</option>
+                    <option value="44" selected>標準</option>
+                    <option value="58">濃郁</option>
+                  </select></label
+                >
+              </div>
               <label for="color-choice" id="choice-label">色環選項</label>
               <div class="choose">
                 <select id="color-choice"></select
                 ><button id="add-color">加入配色</button>
               </div>
               <div id="recommendations" aria-label="推薦配色"></div>
+              <div class="mix-browse">
+                <a id="find-hunt" href="#hunt" hidden>看整組四色 ↘</a
+                ><button id="more-colors" hidden>下一批推薦</button
+                ><button id="switch-colors" hidden>瀏覽全色環</button>
+              </div>
+              <details id="brand-color">
+                <summary>輸入指定 HEX 色碼</summary>
+                <form id="hex-form">
+                  <label for="custom-hex">HEX 色碼</label
+                  ><input
+                    id="custom-hex"
+                    placeholder="#4659A8"
+                    maxlength="7"
+                    autocomplete="off"
+                    spellcheck="false"
+                  /><button>加入此色</button>
+                </form>
+                <small id="hex-feedback" role="status"></small>
+              </details>
             </div>
           </div>
           <div class="orbit" id="orbit">
@@ -60,6 +112,13 @@
           </div>
           <div id="proportion" aria-label="顏色面積比例"></div>
           <div id="allocations"></div>
+          <div id="role-preview" hidden>
+            <div class="role-example">
+              <span class="role-tag">本期精選</span><strong>設計選輯</strong
+              ><span class="role-button">查看作品 ↗</span>
+            </div>
+            <p id="role-contrast"></p>
+          </div>
           <p id="mix-empty">
             點選色環加入第一個顏色，這裡會列出色碼與可調整的面積比例。
           </p>
@@ -72,9 +131,30 @@
           </div>
         </div>
       </section>
+      <section id="hunt">
+        <div class="section-head">
+          <h2>Color Hunt 四色庫</h2>
+          <a href="https://colorhunt.co/">查看原站 ↗</a>
+        </div>
+        <p id="hunt-status" role="status">正在讀取公開色卡…</p>
+        <div class="tools">
+          <label
+            >排列方式
+            <select id="hunt-order">
+              <option value="match">依目前選色與方向</option>
+              <option value="new">最新收錄</option>
+            </select></label
+          ><a href="colorhunt.json">完整色碼資料</a>
+        </div>
+        <div id="hunt-grid" class="catalog"></div>
+        <div class="hunt-pages">
+          <button id="hunt-prev">上一頁</button><span id="hunt-page"></span
+          ><button id="hunt-next">下一頁</button>
+        </div>
+      </section>
       <section id="library">
         <div class="section-head">
-          <h2>色卡庫</h2>
+          <h2>團隊網站色卡</h2>
           <span id="count"></span>
         </div>
         <div class="tools">
@@ -94,6 +174,7 @@
           >
         </div>
         <div class="catalog" id="catalog"></div>
+        <button id="more-cards" class="more-cards" hidden>顯示更多色卡</button>
       </section>
       <section id="preview" tabindex="-1">
         <div class="section-head">
@@ -117,7 +198,8 @@
           <div id="tokens" class="tokens"></div>
           <p id="contrast" class="fine"></p>
           <div class="actions">
-            <button id="share">複製選色連結</button
+            <button id="use-card">套用到配置表</button
+            ><button id="share">複製選色連結</button
             ><button id="copy-css">複製 CSS 變數</button
             ><span id="feedback" role="status"></span>
           </div>
@@ -126,9 +208,22 @@
       <section id="sources">
         <h2>參考來源</h2>
         <p>
-          這組色卡重新搭配色值。選色時借鏡下列工具對色彩、版面與元件的處理方式。
+          Color Hunt
+          四色庫保留原始搭配。團隊網站色卡另行配色，並參考下列工具安排網站元件。
         </p>
         <div class="sources">
+          <a href="https://colorhunt.co/"
+            ><b>Color Hunt ↗</b
+            ><small
+              >保留公開色卡的四個色碼及原始排列，每組附原站連結。</small
+            ></a
+          ><a href="https://paletton.com/"
+            ><b>Paletton ↗</b
+            ><small
+              >參考同色、鄰近與互補的搭配方式。本工具用 HSL
+              色相及明度差推薦。</small
+            ></a
+          >
           <a href="https://color.adobe.com/explore"
             ><b>Adobe Color ↗</b
             ><small>按情緒與風格探索搭配，整理用途分類。</small></a

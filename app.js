@@ -1,3 +1,4 @@
+import { applyPalette } from "./mixer.js";
 const byId = (id) => document.getElementById(id);
 const labels = {
   canvas: "頁面底色",
@@ -52,6 +53,7 @@ function updateUrl() {
   url.hash = location.hash;
   history.replaceState(null, "", url);
 }
+let cardLimit = 16;
 function renderCards() {
   const matches = palettes.filter(
     (p) =>
@@ -62,7 +64,8 @@ function renderCards() {
     matches.length + " / " + palettes.length + " 組配色";
   const catalog = byId("catalog");
   catalog.replaceChildren();
-  for (const palette of matches) {
+  byId("more-cards").hidden = matches.length <= cardLimit;
+  for (const palette of matches.slice(0, cardLimit)) {
     const card = element("button", null, "card");
     card.dataset.id = palette.id;
     pressed(card, palette === selected);
@@ -161,12 +164,20 @@ async function init() {
     pressed(button, label === category);
     button.onclick = () => {
       category = label;
+      cardLimit = 16;
       for (const b of byId("filter").children) pressed(b, b === button);
       renderCards();
     };
     byId("filter").append(button);
   });
-  byId("mode").onchange = renderCards;
+  byId("mode").onchange = () => {
+    cardLimit = 16;
+    renderCards();
+  };
+  byId("more-cards").onclick = () => {
+    cardLimit += 16;
+    renderCards();
+  };
   for (const button of byId("views").children)
     button.onclick = () => {
       view = button.dataset.view;
@@ -174,6 +185,10 @@ async function init() {
       renderDemo();
       byId("feedback").textContent = "";
     };
+  byId("use-card").onclick = () => {
+    const c = selected.colors;
+    applyPalette([c.primary, c.canvas, c.accent, c.text]);
+  };
   byId("share").onclick = () => copy(selectionUrl().href, "已複製選色連結");
   byId("copy-css").onclick = () => {
     const properties = Object.entries(selected.colors).map(

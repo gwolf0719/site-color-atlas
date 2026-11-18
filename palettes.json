@@ -270,5 +270,821 @@
       "accent": "#DBACBB",
       "onAccent": "#1A1920"
     }
+  },
+  {
+    "id": "studio-0-0",
+    "name": "櫻實・展覽",
+    "category": "品牌編輯",
+    "mode": "淺色",
+    "description": "展覽日期與報名入口採主色，對比色留給展區標籤。",
+    "colors": {
+      "canvas": "#F6EBF2",
+      "surface": "#FBF5FA",
+      "text": "#30152D",
+      "muted": "#705169",
+      "primary": "#933939",
+      "onPrimary": "#FEFEFE",
+      "accent": "#81BB88",
+      "onAccent": "#010102"
+    }
+  },
+  {
+    "id": "studio-0-1",
+    "name": "櫻實・選物",
+    "category": "商店生活",
+    "mode": "淺色",
+    "description": "主色標記價格與結帳入口，柔和的點綴色區分商品系列。",
+    "colors": {
+      "canvas": "#F4E6EB",
+      "surface": "#FBF3F6",
+      "text": "#351B28",
+      "muted": "#705363",
+      "primary": "#B84747",
+      "onPrimary": "#FEFEFE",
+      "accent": "#D1C7A9",
+      "onAccent": "#010102"
+    }
+  },
+  {
+    "id": "studio-0-2",
+    "name": "櫻實・工作台",
+    "category": "數位產品",
+    "mode": "深色",
+    "description": "深底介面以主色標記操作，用點綴色顯示摘要。",
+    "colors": {
+      "canvas": "#141D32",
+      "surface": "#222E46",
+      "text": "#E6EBFA",
+      "muted": "#B4C1DB",
+      "primary": "#C97373",
+      "onPrimary": "#010102",
+      "accent": "#59A6A6",
+      "onAccent": "#010102"
+    }
+  },
+  {
+    "id": "studio-0-3",
+    "name": "櫻實・夜刊",
+    "category": "品牌編輯",
+    "mode": "深色",
+    "description": "深底襯托專題標題，以點綴色標出引言與期數。",
+    "colors": {
+      "canvas": "#251727",
+      "surface": "#322036",
+      "text": "#F2DFED",
+      "muted": "#C9ABBF",
+      "primary": "#DAA0A0",
+      "onPrimary": "#010102",
+      "accent": "#90BB81",
+      "onAccent": "#010102"
+    }
+  },
+  {
+    "id": "studio-1-0",
+    "name": "佛手柑・展覽",
+    "category": "品牌編輯",
+    "mode": "淺色",
+    "description": "展覽日期與報名入口採主色，對比色留給展區標籤。",
+    "colors": {
+      "canvas": "#F6EBF2",
+      "surface": "#FBF5FA",
+      "text": "#30152D",
+      "muted": "#705169",
+      "primary": "#936639",
+      "onPrimary": "#FEFEFE",
+      "accent": "#81B4BB",
+      "onAccent": "#010102"
+    }
+  },
+  {
+    "id": "studio-1-1",
+    "name": "佛手柑・選物",
+    "category": "商店生活",
+    "mode": "淺色",
+    "description": "主色標記價格與結帳入口，柔和的點綴色區分商品系列。",
+    "colors": {
+      "canvas": "#F4E6EB",
+      "surface": "#FBF3F6",
+      "text": "#351B28",
+      "muted": "#705363",
+      "primary": "#B88047",
+      "onPrimary": "#010102",
+      "accent": "#C7D1A9",
+      "onAccent": "#010102"
+    }
+  },
+  {
+    "id": "studio-1-2",
+    "name": "佛手柑・工作台",
+    "category": "數位產品",
+    "mode": "深色",
+    "description": "深底介面以主色標記操作，用點綴色顯示摘要。",
+    "colors": {
+      "canvas": "#141D32",
+      "surface": "#222E46",
+      "text": "#E6EBFA",
+      "muted": "#B4C1DB",
+      "primary": "#C99E73",
+      "onPrimary": "#010102",
+      "accent": "#5980A6",
+      "onAccent": "#010102"
+    }
+  },
+  {
+    "id": "studio-1-3",
+    "name": "佛手柑・夜刊",
+    "category": "品牌編輯",
+    "mode": "深色",
+    "description": "深底襯托專題標題，以點綴色標出引言與期數。",
+    "colors": {
+      "canvas": "#251727",
+      "surface": "#322036",
+      "text": "#F2DFED",
+      "muted": "#C9ABBF",
+      "primary": "#DABDA0",
+      "onPrimary": "#010102",
+      "accent": "#81BB88",
+      "onAccent": "#010102"
+    }
+  },
+  {
+    "id": "studio-2-0",
+    "name": "油菜花・展覽",
+    "category": "品牌編輯",
+    "mode": "淺色",
+    "description": "展覽日期與報名入口採主色，對比色留給展區標籤。",
+    "colors": {
+      "canvas": "#F6EBF2",
+      "surface": "#FBF5FA",
+      "text": "#30152D",
+      "muted": "#705169",
+      "primary": "#939339",
+      "onPrimary": "#010102",
+      "accent": "#819EBB",
+      "onAccent": "#010102"
+    }
+  },
+  {
+    "id": "studio-2-1",
+    "name": "油菜花・選物",
+    "category": "商店生活",
+    "mode": "淺色",
+    "description": "主色標記價格與結帳入口，柔和的點綴色區分商品系列。",
+    "colors": {
+      "canvas": "#F4E6EB",
+      "surface": "#FBF3F6",
+      "text": "#351B28",
+      "muted": "#705363",
+      "primary": "#B8B847",
+      "onPrimary": "#010102",
+      "accent": "#B3D1A9",
+      "onAccent": "#010102"
+    }
+  },
+  {
+    "id": "studio-2-2",
+    "name": "油菜花・工作台",
+    "category": "數位產品",
+    "mode": "深色",
+    "description": "深底介面以主色標記操作，用點綴色顯示摘要。",
+    "colors": {
+      "canvas": "#141D32",
+      "surface": "#222E46",
+      "text": "#E6EBFA",
+      "muted": "#B4C1DB",
+      "primary": "#C9C973",
+      "onPrimary": "#010102",
+      "accent": "#5959A6",
+      "onAccent": "#FEFEFE"
+    }
+  },
+  {
+    "id": "studio-2-3",
+    "name": "油菜花・夜刊",
+    "category": "品牌編輯",
+    "mode": "深色",
+    "description": "深底襯托專題標題，以點綴色標出引言與期數。",
+    "colors": {
+      "canvas": "#251727",
+      "surface": "#322036",
+      "text": "#F2DFED",
+      "muted": "#C9ABBF",
+      "primary": "#DADAA0",
+      "onPrimary": "#010102",
+      "accent": "#81B4BB",
+      "onAccent": "#010102"
+    }
+  },
+  {
+    "id": "studio-3-0",
+    "name": "嫩芽・展覽",
+    "category": "品牌編輯",
+    "mode": "淺色",
+    "description": "展覽日期與報名入口採主色，對比色留給展區標籤。",
+    "colors": {
+      "canvas": "#F6EBF2",
+      "surface": "#FBF5FA",
+      "text": "#30152D",
+      "muted": "#705169",
+      "primary": "#669339",
+      "onPrimary": "#010102",
+      "accent": "#8181BB",
+      "onAccent": "#010102"
+    }
+  },
+  {
+    "id": "studio-3-1",
+    "name": "嫩芽・選物",
+    "category": "商店生活",
+    "mode": "淺色",
+    "description": "主色標記價格與結帳入口，柔和的點綴色區分商品系列。",
+    "colors": {
+      "canvas": "#F4E6EB",
+      "surface": "#FBF3F6",
+      "text": "#351B28",
+      "muted": "#705363",
+      "primary": "#80B847",
+      "onPrimary": "#010102",
+      "accent": "#A9D1AE",
+      "onAccent": "#010102"
+    }
+  },
+  {
+    "id": "studio-3-2",
+    "name": "嫩芽・工作台",
+    "category": "數位產品",
+    "mode": "深色",
+    "description": "深底介面以主色標記操作，用點綴色顯示摘要。",
+    "colors": {
+      "canvas": "#141D32",
+      "surface": "#222E46",
+      "text": "#E6EBFA",
+      "muted": "#B4C1DB",
+      "primary": "#9EC973",
+      "onPrimary": "#010102",
+      "accent": "#8059A6",
+      "onAccent": "#FEFEFE"
+    }
+  },
+  {
+    "id": "studio-3-3",
+    "name": "嫩芽・夜刊",
+    "category": "品牌編輯",
+    "mode": "深色",
+    "description": "深底襯托專題標題，以點綴色標出引言與期數。",
+    "colors": {
+      "canvas": "#251727",
+      "surface": "#322036",
+      "text": "#F2DFED",
+      "muted": "#C9ABBF",
+      "primary": "#BDDAA0",
+      "onPrimary": "#010102",
+      "accent": "#81ADBB",
+      "onAccent": "#010102"
+    }
+  },
+  {
+    "id": "studio-4-0",
+    "name": "蕨葉・展覽",
+    "category": "品牌編輯",
+    "mode": "淺色",
+    "description": "展覽日期與報名入口採主色，對比色留給展區標籤。",
+    "colors": {
+      "canvas": "#F6EBF2",
+      "surface": "#FBF5FA",
+      "text": "#30152D",
+      "muted": "#705169",
+      "primary": "#399339",
+      "onPrimary": "#010102",
+      "accent": "#9E81BB",
+      "onAccent": "#010102"
+    }
+  },
+  {
+    "id": "studio-4-1",
+    "name": "蕨葉・選物",
+    "category": "商店生活",
+    "mode": "淺色",
+    "description": "主色標記價格與結帳入口，柔和的點綴色區分商品系列。",
+    "colors": {
+      "canvas": "#F4E6EB",
+      "surface": "#FBF3F6",
+      "text": "#351B28",
+      "muted": "#705363",
+      "primary": "#47B847",
+      "onPrimary": "#010102",
+      "accent": "#A9CCD1",
+      "onAccent": "#010102"
+    }
+  },
+  {
+    "id": "studio-4-2",
+    "name": "蕨葉・工作台",
+    "category": "數位產品",
+    "mode": "深色",
+    "description": "深底介面以主色標記操作，用點綴色顯示摘要。",
+    "colors": {
+      "canvas": "#141D32",
+      "surface": "#222E46",
+      "text": "#E6EBFA",
+      "muted": "#B4C1DB",
+      "primary": "#73C973",
+      "onPrimary": "#010102",
+      "accent": "#A659A6",
+      "onAccent": "#010102"
+    }
+  },
+  {
+    "id": "studio-4-3",
+    "name": "蕨葉・夜刊",
+    "category": "品牌編輯",
+    "mode": "深色",
+    "description": "深底襯托專題標題，以點綴色標出引言與期數。",
+    "colors": {
+      "canvas": "#251727",
+      "surface": "#322036",
+      "text": "#F2DFED",
+      "muted": "#C9ABBF",
+      "primary": "#A0DAA0",
+      "onPrimary": "#010102",
+      "accent": "#8190BB",
+      "onAccent": "#010102"
+    }
+  },
+  {
+    "id": "studio-5-0",
+    "name": "山茶綠・展覽",
+    "category": "品牌編輯",
+    "mode": "淺色",
+    "description": "展覽日期與報名入口採主色，對比色留給展區標籤。",
+    "colors": {
+      "canvas": "#F6EBF2",
+      "surface": "#FBF5FA",
+      "text": "#30152D",
+      "muted": "#705169",
+      "primary": "#399366",
+      "onPrimary": "#010102",
+      "accent": "#BB81BB",
+      "onAccent": "#010102"
+    }
+  },
+  {
+    "id": "studio-5-1",
+    "name": "山茶綠・選物",
+    "category": "商店生活",
+    "mode": "淺色",
+    "description": "主色標記價格與結帳入口，柔和的點綴色區分商品系列。",
+    "colors": {
+      "canvas": "#F4E6EB",
+      "surface": "#FBF3F6",
+      "text": "#351B28",
+      "muted": "#705363",
+      "primary": "#47B880",
+      "onPrimary": "#010102",
+      "accent": "#A9C7D1",
+      "onAccent": "#010102"
+    }
+  },
+  {
+    "id": "studio-5-2",
+    "name": "山茶綠・工作台",
+    "category": "數位產品",
+    "mode": "深色",
+    "description": "深底介面以主色標記操作，用點綴色顯示摘要。",
+    "colors": {
+      "canvas": "#141D32",
+      "surface": "#222E46",
+      "text": "#E6EBFA",
+      "muted": "#B4C1DB",
+      "primary": "#73C97E",
+      "onPrimary": "#010102",
+      "accent": "#A65980",
+      "onAccent": "#FEFEFE"
+    }
+  },
+  {
+    "id": "studio-5-3",
+    "name": "山茶綠・夜刊",
+    "category": "品牌編輯",
+    "mode": "深色",
+    "description": "深底襯托專題標題，以點綴色標出引言與期數。",
+    "colors": {
+      "canvas": "#251727",
+      "surface": "#322036",
+      "text": "#F2DFED",
+      "muted": "#C9ABBF",
+      "primary": "#A0DAA7",
+      "onPrimary": "#010102",
+      "accent": "#9081BB",
+      "onAccent": "#010102"
+    }
+  },
+  {
+    "id": "studio-6-0",
+    "name": "碧潭・展覽",
+    "category": "品牌編輯",
+    "mode": "淺色",
+    "description": "展覽日期與報名入口採主色，對比色留給展區標籤。",
+    "colors": {
+      "canvas": "#F6EBF2",
+      "surface": "#FBF5FA",
+      "text": "#30152D",
+      "muted": "#705169",
+      "primary": "#399393",
+      "onPrimary": "#010102",
+      "accent": "#BB819E",
+      "onAccent": "#010102"
+    }
+  },
+  {
+    "id": "studio-6-1",
+    "name": "碧潭・選物",
+    "category": "商店生活",
+    "mode": "淺色",
+    "description": "主色標記價格與結帳入口，柔和的點綴色區分商品系列。",
+    "colors": {
+      "canvas": "#F4E6EB",
+      "surface": "#FBF3F6",
+      "text": "#351B28",
+      "muted": "#705363",
+      "primary": "#47B8B8",
+      "onPrimary": "#010102",
+      "accent": "#A9B3D1",
+      "onAccent": "#010102"
+    }
+  },
+  {
+    "id": "studio-6-2",
+    "name": "碧潭・工作台",
+    "category": "數位產品",
+    "mode": "深色",
+    "description": "深底介面以主色標記操作，用點綴色顯示摘要。",
+    "colors": {
+      "canvas": "#141D32",
+      "surface": "#222E46",
+      "text": "#E6EBFA",
+      "muted": "#B4C1DB",
+      "primary": "#73BEC9",
+      "onPrimary": "#010102",
+      "accent": "#A65959",
+      "onAccent": "#FEFEFE"
+    }
+  },
+  {
+    "id": "studio-6-3",
+    "name": "碧潭・夜刊",
+    "category": "品牌編輯",
+    "mode": "深色",
+    "description": "深底襯托專題標題，以點綴色標出引言與期數。",
+    "colors": {
+      "canvas": "#251727",
+      "surface": "#322036",
+      "text": "#F2DFED",
+      "muted": "#C9ABBF",
+      "primary": "#A0D3DA",
+      "onPrimary": "#010102",
+      "accent": "#AD81BB",
+      "onAccent": "#010102"
+    }
+  },
+  {
+    "id": "studio-7-0",
+    "name": "遠洋・展覽",
+    "category": "品牌編輯",
+    "mode": "淺色",
+    "description": "展覽日期與報名入口採主色，對比色留給展區標籤。",
+    "colors": {
+      "canvas": "#F6EBF2",
+      "surface": "#FBF5FA",
+      "text": "#30152D",
+      "muted": "#705169",
+      "primary": "#396693",
+      "onPrimary": "#FEFEFE",
+      "accent": "#BB8181",
+      "onAccent": "#010102"
+    }
+  },
+  {
+    "id": "studio-7-1",
+    "name": "遠洋・選物",
+    "category": "商店生活",
+    "mode": "淺色",
+    "description": "主色標記價格與結帳入口，柔和的點綴色區分商品系列。",
+    "colors": {
+      "canvas": "#F4E6EB",
+      "surface": "#FBF3F6",
+      "text": "#351B28",
+      "muted": "#705363",
+      "primary": "#4780B8",
+      "onPrimary": "#010102",
+      "accent": "#B3A9D1",
+      "onAccent": "#010102"
+    }
+  },
+  {
+    "id": "studio-7-2",
+    "name": "遠洋・工作台",
+    "category": "數位產品",
+    "mode": "深色",
+    "description": "深底介面以主色標記操作，用點綴色顯示摘要。",
+    "colors": {
+      "canvas": "#141D32",
+      "surface": "#222E46",
+      "text": "#E6EBFA",
+      "muted": "#B4C1DB",
+      "primary": "#739EC9",
+      "onPrimary": "#010102",
+      "accent": "#A68059",
+      "onAccent": "#010102"
+    }
+  },
+  {
+    "id": "studio-7-3",
+    "name": "遠洋・夜刊",
+    "category": "品牌編輯",
+    "mode": "深色",
+    "description": "深底襯托專題標題，以點綴色標出引言與期數。",
+    "colors": {
+      "canvas": "#251727",
+      "surface": "#322036",
+      "text": "#F2DFED",
+      "muted": "#C9ABBF",
+      "primary": "#A0BDDA",
+      "onPrimary": "#010102",
+      "accent": "#BB81AD",
+      "onAccent": "#010102"
+    }
+  },
+  {
+    "id": "studio-8-0",
+    "name": "琉璃・展覽",
+    "category": "品牌編輯",
+    "mode": "淺色",
+    "description": "展覽日期與報名入口採主色，對比色留給展區標籤。",
+    "colors": {
+      "canvas": "#F6EBF2",
+      "surface": "#FBF5FA",
+      "text": "#30152D",
+      "muted": "#705169",
+      "primary": "#393993",
+      "onPrimary": "#FEFEFE",
+      "accent": "#BB9E81",
+      "onAccent": "#010102"
+    }
+  },
+  {
+    "id": "studio-8-1",
+    "name": "琉璃・選物",
+    "category": "商店生活",
+    "mode": "淺色",
+    "description": "主色標記價格與結帳入口，柔和的點綴色區分商品系列。",
+    "colors": {
+      "canvas": "#F4E6EB",
+      "surface": "#FBF3F6",
+      "text": "#351B28",
+      "muted": "#705363",
+      "primary": "#4747B8",
+      "onPrimary": "#FEFEFE",
+      "accent": "#C7A9D1",
+      "onAccent": "#010102"
+    }
+  },
+  {
+    "id": "studio-8-2",
+    "name": "琉璃・工作台",
+    "category": "數位產品",
+    "mode": "深色",
+    "description": "深底介面以主色標記操作，用點綴色顯示摘要。",
+    "colors": {
+      "canvas": "#141D32",
+      "surface": "#222E46",
+      "text": "#E6EBFA",
+      "muted": "#B4C1DB",
+      "primary": "#7373C9",
+      "onPrimary": "#010102",
+      "accent": "#A6A659",
+      "onAccent": "#010102"
+    }
+  },
+  {
+    "id": "studio-8-3",
+    "name": "琉璃・夜刊",
+    "category": "品牌編輯",
+    "mode": "深色",
+    "description": "深底襯托專題標題，以點綴色標出引言與期數。",
+    "colors": {
+      "canvas": "#251727",
+      "surface": "#322036",
+      "text": "#F2DFED",
+      "muted": "#C9ABBF",
+      "primary": "#A0A0DA",
+      "onPrimary": "#010102",
+      "accent": "#BB8190",
+      "onAccent": "#010102"
+    }
+  },
+  {
+    "id": "studio-9-0",
+    "name": "鼠尾草紫・展覽",
+    "category": "品牌編輯",
+    "mode": "淺色",
+    "description": "展覽日期與報名入口採主色，對比色留給展區標籤。",
+    "colors": {
+      "canvas": "#F6EBF2",
+      "surface": "#FBF5FA",
+      "text": "#30152D",
+      "muted": "#705169",
+      "primary": "#663993",
+      "onPrimary": "#FEFEFE",
+      "accent": "#BBBB81",
+      "onAccent": "#010102"
+    }
+  },
+  {
+    "id": "studio-9-1",
+    "name": "鼠尾草紫・選物",
+    "category": "商店生活",
+    "mode": "淺色",
+    "description": "主色標記價格與結帳入口，柔和的點綴色區分商品系列。",
+    "colors": {
+      "canvas": "#F4E6EB",
+      "surface": "#FBF3F6",
+      "text": "#351B28",
+      "muted": "#705363",
+      "primary": "#8047B8",
+      "onPrimary": "#FEFEFE",
+      "accent": "#D1A9C7",
+      "onAccent": "#010102"
+    }
+  },
+  {
+    "id": "studio-9-2",
+    "name": "鼠尾草紫・工作台",
+    "category": "數位產品",
+    "mode": "深色",
+    "description": "深底介面以主色標記操作，用點綴色顯示摘要。",
+    "colors": {
+      "canvas": "#141D32",
+      "surface": "#222E46",
+      "text": "#E6EBFA",
+      "muted": "#B4C1DB",
+      "primary": "#9E73C9",
+      "onPrimary": "#010102",
+      "accent": "#80A659",
+      "onAccent": "#010102"
+    }
+  },
+  {
+    "id": "studio-9-3",
+    "name": "鼠尾草紫・夜刊",
+    "category": "品牌編輯",
+    "mode": "深色",
+    "description": "深底襯托專題標題，以點綴色標出引言與期數。",
+    "colors": {
+      "canvas": "#251727",
+      "surface": "#322036",
+      "text": "#F2DFED",
+      "muted": "#C9ABBF",
+      "primary": "#BDA0DA",
+      "onPrimary": "#010102",
+      "accent": "#BB9081",
+      "onAccent": "#010102"
+    }
+  },
+  {
+    "id": "studio-10-0",
+    "name": "紫蘇花・展覽",
+    "category": "品牌編輯",
+    "mode": "淺色",
+    "description": "展覽日期與報名入口採主色，對比色留給展區標籤。",
+    "colors": {
+      "canvas": "#F6EBF2",
+      "surface": "#FBF5FA",
+      "text": "#30152D",
+      "muted": "#705169",
+      "primary": "#933993",
+      "onPrimary": "#FEFEFE",
+      "accent": "#9EBB81",
+      "onAccent": "#010102"
+    }
+  },
+  {
+    "id": "studio-10-1",
+    "name": "紫蘇花・選物",
+    "category": "商店生活",
+    "mode": "淺色",
+    "description": "主色標記價格與結帳入口，柔和的點綴色區分商品系列。",
+    "colors": {
+      "canvas": "#F4E6EB",
+      "surface": "#FBF3F6",
+      "text": "#351B28",
+      "muted": "#705363",
+      "primary": "#B847B8",
+      "onPrimary": "#010102",
+      "accent": "#D1A9B3",
+      "onAccent": "#010102"
+    }
+  },
+  {
+    "id": "studio-10-2",
+    "name": "紫蘇花・工作台",
+    "category": "數位產品",
+    "mode": "深色",
+    "description": "深底介面以主色標記操作，用點綴色顯示摘要。",
+    "colors": {
+      "canvas": "#141D32",
+      "surface": "#222E46",
+      "text": "#E6EBFA",
+      "muted": "#B4C1DB",
+      "primary": "#C973C9",
+      "onPrimary": "#010102",
+      "accent": "#59A659",
+      "onAccent": "#010102"
+    }
+  },
+  {
+    "id": "studio-10-3",
+    "name": "紫蘇花・夜刊",
+    "category": "品牌編輯",
+    "mode": "深色",
+    "description": "深底襯托專題標題，以點綴色標出引言與期數。",
+    "colors": {
+      "canvas": "#251727",
+      "surface": "#322036",
+      "text": "#F2DFED",
+      "muted": "#C9ABBF",
+      "primary": "#DAA0DA",
+      "onPrimary": "#010102",
+      "accent": "#BBAD81",
+      "onAccent": "#010102"
+    }
+  },
+  {
+    "id": "studio-11-0",
+    "name": "薔薇・展覽",
+    "category": "品牌編輯",
+    "mode": "淺色",
+    "description": "展覽日期與報名入口採主色，對比色留給展區標籤。",
+    "colors": {
+      "canvas": "#F6EBF2",
+      "surface": "#FBF5FA",
+      "text": "#30152D",
+      "muted": "#705169",
+      "primary": "#933966",
+      "onPrimary": "#FEFEFE",
+      "accent": "#81BB81",
+      "onAccent": "#010102"
+    }
+  },
+  {
+    "id": "studio-11-1",
+    "name": "薔薇・選物",
+    "category": "商店生活",
+    "mode": "淺色",
+    "description": "主色標記價格與結帳入口，柔和的點綴色區分商品系列。",
+    "colors": {
+      "canvas": "#F4E6EB",
+      "surface": "#FBF3F6",
+      "text": "#351B28",
+      "muted": "#705363",
+      "primary": "#B84780",
+      "onPrimary": "#FEFEFE",
+      "accent": "#D1B3A9",
+      "onAccent": "#010102"
+    }
+  },
+  {
+    "id": "studio-11-2",
+    "name": "薔薇・工作台",
+    "category": "數位產品",
+    "mode": "深色",
+    "description": "深底介面以主色標記操作，用點綴色顯示摘要。",
+    "colors": {
+      "canvas": "#141D32",
+      "surface": "#222E46",
+      "text": "#E6EBFA",
+      "muted": "#B4C1DB",
+      "primary": "#C9739E",
+      "onPrimary": "#010102",
+      "accent": "#59A680",
+      "onAccent": "#010102"
+    }
+  },
+  {
+    "id": "studio-11-3",
+    "name": "薔薇・夜刊",
+    "category": "品牌編輯",
+    "mode": "深色",
+    "description": "深底襯托專題標題，以點綴色標出引言與期數。",
+    "colors": {
+      "canvas": "#251727",
+      "surface": "#322036",
+      "text": "#F2DFED",
+      "muted": "#C9ABBF",
+      "primary": "#DAA0BD",
+      "onPrimary": "#010102",
+      "accent": "#ADBB81",
+      "onAccent": "#010102"
+    }
   }
 ]

@@ -1,3 +1,5 @@
+import { defaults } from "./color-rules.mjs";
+import { safe, layer, harmonies } from "./spectrum.mjs";
 // 依色相排列，固定色值讓分享連結與複製結果一致。
 export const families = [
   ["櫻桃紅", "AD254A", "D9A4BA", "9BAED4", "F6E9EF", "341C2C"],
@@ -17,16 +19,6 @@ export const families = [
 ].map(([name, ...values]) => ({ name, colors: values.map((v) => "#" + v) }));
 
 export const LIMIT = 8;
-export const roleNames = [
-  "主色",
-  "副色",
-  "搭配色",
-  "輔色",
-  "點綴色",
-  "細節色",
-  "細節色",
-  "細節色",
-];
 export const allColors = new Set(families.flatMap((f) => f.colors));
 export const letter = (i) => String.fromCharCode(65 + i);
 const rgb = (hex) =>
@@ -39,32 +31,17 @@ function distance(a, b) {
     y = rgb(b);
   return Math.sqrt(x.reduce((s, v, i) => s + (v - y[i]) ** 2, 0) / 3);
 }
-export function candidates(picks) {
-  if (!picks.length)
-    return families.map((f) => ({ hex: f.colors[0], name: f.name }));
+export function candidates(picks, mode, primary) {
+  if (!picks.length) return layer(40, 44);
   if (picks.length >= LIMIT) return [];
-  const at = families.findIndex((f) => f.colors[0] === picks[0].hex);
-  const family = families[at],
-    last = picks.at(-1).hex;
-  const options = family.colors
-    .slice(1)
-    .map((hex, i) => ({
-      hex,
-      name: ["呼應色", "對照色", "淺底色", "深底色"][i],
-    }));
-  for (const offset of [1, -1, 7, 3, -3, 5, -5]) {
-    const related = families[(at + families.length + offset) % families.length];
-    options.push({ hex: related.colors[0], name: related.name });
-  }
-  const target = picks.length === 1 ? 0.47 : 0.32;
-  return options
-    .filter((c) => !picks.some((p) => p.hex === c.hex))
-    .sort(
-      (a, b) =>
-        Math.abs(distance(a.hex, last) - target) -
-        Math.abs(distance(b.hex, last) - target),
-    )
-    .slice(0, 6);
+  return harmonies(picks, mode, primary);
+}
+function canAdd(picks, hex) {
+  return (
+    picks.length < LIMIT &&
+    (allColors.has(hex) || safe(hex)) &&
+    !picks.some((p) => p.hex === hex)
+  );
 }
 // 最大餘數法保證各色至少 1%，整數總和恆為 100%。
 function distribute(weights, total) {
@@ -81,13 +58,16 @@ function distribute(weights, total) {
   return result;
 }
 export function appendColor(picks, hex) {
-  if (!candidates(picks).some((c) => c.hex === hex)) return picks;
+  if (!canAdd(picks, hex)) return picks;
   if (!picks.length) return [{ hex, percent: 100 }];
   const previous = picks.at(-1).percent;
   const factor = 0.53 - 0.18 * distance(hex, picks[0].hex);
   const share = Math.max(
     1,
-    Math.min(previous - 1, Math.round(previous * factor)),
+    Math.min(
+      Math.floor((99 * previous) / (100 + previous)),
+      Math.round(previous * factor),
+    ),
   );
   const rescaled = distribute(
     picks.map((p) => p.percent),
@@ -133,23 +113,18 @@ export function decode(value) {
     if (!m) return [];
     const hex = "#" + m[1].toUpperCase(),
       percent = Number(m[2]);
-    if (
-      !candidates(picks).some((c) => c.hex === hex) ||
-      percent < 1 ||
-      percent > 100
-    )
-      return [];
+    if (!canAdd(picks, hex) || percent < 1 || percent > 100) return [];
     picks.push({ hex, percent });
   }
   return picks.reduce((s, p) => s + p.percent, 0) === 100 ? picks : [];
 }
-export function format(picks) {
+export function format(picks, names = defaults) {
   return [
     "網站配色配置表",
     "請依下列色碼與面積比例設計畫面。",
     ...picks.map(
       (p, i) =>
-        letter(i) + " " + roleNames[i] + " " + p.hex + "　" + p.percent + "%",
+        letter(i) + " " + names[i] + " " + p.hex + "　" + p.percent + "%",
     ),
     "合計 100%",
   ].join("\n");
