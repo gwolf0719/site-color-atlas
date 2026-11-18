@@ -342,7 +342,7 @@ export function createWheel(host, onChoose, onHover, onLoss, onRemove) {
       orbit.style.cursor = target ? "pointer" : "grab";
       onHover(
         target?.selected ? { hex: target.selected } : options[active] || null,
-        false,
+        e.pointerType !== "touch" && e.buttons === 0,
       );
     }
     schedule();

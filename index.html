@@ -9,28 +9,29 @@
       name="description"
       content="點選立體色環，探索協調或鮮明高反差的配色，將色碼與面積比例整段複製給 AI。"
     />
-    <link rel="stylesheet" href="style.css?v=desk-commerce-2" />
-    <link rel="stylesheet" href="mixer.css?v=desk-commerce-2" />
-    <link rel="stylesheet" href="exhibition.css?v=desk-commerce-2" />
-    <link rel="stylesheet" href="desk.css?v=desk-commerce-2" />
+    <link rel="stylesheet" href="style.css?v=hover-proof-2" />
+    <link rel="stylesheet" href="mixer.css?v=hover-proof-2" />
+    <link rel="stylesheet" href="exhibition.css?v=hover-proof-2" />
+    <link rel="stylesheet" href="desk.css?v=hover-proof-2" />
     <script type="importmap">
       {
         "imports": {
-          "./paper-interactions.mjs": "./paper-interactions.mjs?v=desk-commerce-2",
-          "./commercial-color.mjs": "./commercial-color.mjs?v=desk-commerce-2",
-          "./app.js": "./app.js?v=desk-commerce-2",
-          "./mixer.js": "./mixer.js?v=desk-commerce-2",
-          "./mixer-data.mjs": "./mixer-data.mjs?v=desk-commerce-2",
-          "./spectrum.mjs": "./spectrum.mjs?v=desk-commerce-2",
-          "./color-rules.mjs": "./color-rules.mjs?v=desk-commerce-2",
-          "./hunt.js": "./hunt.js?v=desk-commerce-2",
-          "./ring.js": "./ring.js?v=desk-commerce-2",
-          "./chromatic-scene.js": "./chromatic-scene.js?v=desk-commerce-2",
-          "./vendor/three.js": "./vendor/three.js?v=desk-commerce-2"
+          "./paper-interactions.mjs": "./paper-interactions.mjs?v=hover-proof-2",
+          "./live-proof.mjs": "./live-proof.mjs?v=hover-proof-2",
+          "./commercial-color.mjs": "./commercial-color.mjs?v=hover-proof-2",
+          "./app.js": "./app.js?v=hover-proof-2",
+          "./mixer.js": "./mixer.js?v=hover-proof-2",
+          "./mixer-data.mjs": "./mixer-data.mjs?v=hover-proof-2",
+          "./spectrum.mjs": "./spectrum.mjs?v=hover-proof-2",
+          "./color-rules.mjs": "./color-rules.mjs?v=hover-proof-2",
+          "./hunt.js": "./hunt.js?v=hover-proof-2",
+          "./ring.js": "./ring.js?v=hover-proof-2",
+          "./chromatic-scene.js": "./chromatic-scene.js?v=hover-proof-2",
+          "./vendor/three.js": "./vendor/three.js?v=hover-proof-2"
         }
       }
     </script>
-    <script type="module" src="mixer.js?v=desk-commerce-2"></script>
+    <script type="module" src="mixer.js?v=hover-proof-2"></script>
   </head>
   <body>
     <header>
@@ -55,8 +56,19 @@
               <div class="specimen-caption">
                 <span id="hub-letter">A</span><span id="hub-role">主色</span>
               </div>
-              <h1 id="mix-title">抽一張<br /><em>色紙。</em></h1>
-              <p id="instruction"></p>
+              <div class="intro-frame">
+                <h1 id="mix-title">抽一張<br /><em>色紙。</em></h1>
+                <p id="instruction"></p>
+                <div
+                  id="live-proof"
+                  class="mini-page"
+                  aria-label="商業版面即時試色"
+                >
+                  <small></small><strong></strong><span class="mini-tag"></span
+                  ><span class="mini-action"></span
+                  ><span class="mini-marks" aria-hidden="true"></span>
+                </div>
+              </div>
             </div>
             <div class="choice-area">
               <div
@@ -254,6 +266,15 @@
               <button data-panel="hunt">Color Hunt</button>
               <button data-panel="library">團隊色卡</button>
               <button data-panel="sources">來源</button>
+            </div>
+            <div
+              id="catalog-proof"
+              class="mini-page"
+              aria-label="商業版面即時試色"
+            >
+              <small></small><strong></strong><span class="mini-tag"></span
+              ><span class="mini-action"></span
+              ><span class="mini-marks" aria-hidden="true"></span>
             </div>
             <section id="hunt">
               <div class="section-head">

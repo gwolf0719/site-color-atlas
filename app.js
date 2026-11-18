@@ -1,3 +1,4 @@
+import { bindPreview } from "./live-proof.mjs";
 import { setupHunt } from "./hunt.js";
 const byId = (id) => document.getElementById(id);
 const labels = {
@@ -16,6 +17,7 @@ let view = params.get("view") === "system" ? "system" : "site";
 let category = "全部";
 let palettes = [];
 let selected;
+let previewGroup;
 
 function element(tag, content, className) {
   const node = document.createElement(tag);
@@ -72,6 +74,12 @@ function renderCards() {
       element("span", palette.category + " · " + palette.mode),
     );
     card.append(bars, foot);
+    const c = palette.colors;
+    bindPreview(
+      card,
+      () => previewGroup([c.primary, c.canvas, c.accent, c.text]),
+      () => previewGroup(null),
+    );
     card.onclick = () => {
       selected = palette;
       renderDetail();
@@ -203,6 +211,9 @@ async function loadTeam(applyPalette) {
 
 const sheet = byId("catalog-sheet");
 function showPanel(name) {
+  previewGroup(null);
+  byId("catalog-proof").hidden = !["hunt", "library"].includes(name);
+
   for (const section of sheet.querySelectorAll("section"))
     section.hidden = section.id !== name;
   for (const button of sheet.querySelectorAll("[data-panel]"))
@@ -213,13 +224,15 @@ function showPanel(name) {
   sheet.scrollTop = 0;
 }
 
-export function setupCatalog(applyPalette, context) {
+export function setupCatalog(applyPalette, context, preview) {
+  previewGroup = preview;
+  sheet.addEventListener("close", () => previewGroup(null));
   let teamRequest, updateHunt;
   function open(name = "hunt") {
     if (!sheet.open) sheet.showModal();
     showPanel(name);
     if (name === "hunt") {
-      updateHunt ??= setupHunt(applyPalette);
+      updateHunt ??= setupHunt(applyPalette, previewGroup);
       updateHunt(...context());
     } else if (name === "library" || name === "preview") {
       teamRequest ??= loadTeam(applyPalette).catch(() => {

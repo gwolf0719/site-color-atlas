@@ -1,3 +1,4 @@
+import { bindPreview } from "./live-proof.mjs";
 import { hsl, safe } from "./spectrum.mjs";
 import { arrange, hueGap, ratio } from "./color-rules.mjs";
 const id = (name) => document.getElementById(name);
@@ -9,7 +10,7 @@ const elt = (tag, text) => {
 export const huntUrl = (code) =>
   "https://colorhunt.co/palette/" + code.toLowerCase();
 
-export function setupHunt(apply) {
+export function setupHunt(apply, preview) {
   let items = [],
     sorted = [],
     page = 0,
@@ -62,7 +63,13 @@ export function setupHunt(apply) {
       }
       const caption = elt("span", "套用到轉盤");
       button.append(strip, caption);
-      button.onclick = () => apply(arrange(item.colors), item.code);
+      const ordered = arrange(item.colors);
+      bindPreview(
+        button,
+        () => preview(ordered),
+        () => preview(null),
+      );
+      button.onclick = () => apply(ordered, item.code);
       const link = elt("a", "原卡 ↗");
       link.href = huntUrl(item.code);
       link.target = "_blank";

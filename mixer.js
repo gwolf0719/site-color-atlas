@@ -1,4 +1,10 @@
 import {
+  nextRole,
+  backgroundSample,
+  sketch,
+  bindPreview,
+} from "./live-proof.mjs";
+import {
   brief,
   contexts,
   quieterPrimary,
@@ -45,6 +51,7 @@ el("business-use").onchange = () => {
   chromaTrial = false;
   updateLink();
   businessProof();
+  endTrial();
   copyTicket++;
   el("mix-feedback").textContent = el("desk-feedback").textContent = "";
 };
@@ -133,23 +140,13 @@ function setBackground(hex) {
     el("custom-bg").value = backgroundColor() || "#D9DCE5";
     return;
   }
-  const bg = names.slice(0, picks.length).indexOf("背景"),
-    match = picks.findIndex((p) => p.hex === hex);
-  if (bg >= 0) {
-    if (match >= 0 && match !== bg) {
-      picks[match] = { ...picks[match], hex: picks[bg].hex };
-    }
-    picks[bg] = { ...picks[bg], hex };
-  } else if (match >= 0) {
-    names[match] = "背景";
-  } else {
-    if (picks.length === LIMIT) {
-      el("bg-feedback").textContent = "請先在配置表將一色指定為背景。";
-      return;
-    }
-    names[picks.length] = "背景";
-    picks = appendColor(picks, hex);
+  const next = backgroundSample(picks, names, hex);
+  if (!next) {
+    el("bg-feedback").textContent = "請先在配置表將一色指定為背景。";
+    return;
   }
+  picks = next.picks;
+  names = [...next.roles, ...defaults.slice(next.roles.length)];
   el("bg-feedback").textContent = "";
   page = 0;
   updateLink();
@@ -191,6 +188,16 @@ for (const [name, hex] of grays) {
   b.style.setProperty("--swatch", hex);
   b.title = name + " " + hex;
   b.setAttribute("aria-label", name + " " + hex);
+  bindPreview(
+    b,
+    () =>
+      hover(
+        { hex },
+        true,
+        el("gray-action").value === "background" ? "background" : "add",
+      ),
+    () => hover(null),
+  );
   b.onclick = () => {
     if (el("gray-action").value === "background") {
       if (backgroundColor() === hex) removeSelected(hex);
@@ -218,30 +225,80 @@ el("custom-bg").onchange = () =>
   setBackground(el("custom-bg").value.toUpperCase());
 let pinned = false,
   trial = null;
-function trialProof(hex) {
-  drawProof(picks, hex);
+function trialProof(hex, action = "add", group) {
+  let sample = picks,
+    sampleRoles = names.slice(0, picks.length),
+    caption = "",
+    role = "";
+  if (group) {
+    sample = group.reduce(appendColor, []);
+    sampleRoles = defaults.slice(0, sample.length);
+    caption = "試放整組 " + sample.length + " 色";
+  } else if (hex) {
+    if (action === "background") {
+      const next = backgroundSample(picks, names, hex);
+      if (next) {
+        sample = next.picks;
+        sampleRoles = next.roles;
+      }
+    } else if (!picks.some((p) => p.hex === hex)) {
+      sample = appendColor(picks, hex);
+      if (sample !== picks) sampleRoles.push(nextRole(picks, names));
+    }
+    const i = sample.findIndex((p) => p.hex === hex);
+    if (i >= 0) role = sampleRoles[i];
+    if (i >= 0)
+      caption =
+        "試放" + sampleRoles[i] + " " + hex + " · " + sample[i].percent + "%";
+  }
+  drawProof(picks, sample, caption);
   const stage = el("wheel-host").parentElement;
-  const tryBackground =
-    !!hex &&
-    names.slice(0, picks.length).includes("主色") &&
-    !backgroundColor();
-  stage.toggleAttribute("data-trial-bg", tryBackground);
-  if (tryBackground) {
-    stage.style.setProperty("--trial-base", hex);
-    stage.style.setProperty("--trial-ink", ink(hex));
+  const bg = sample[sampleRoles.indexOf("背景")]?.hex;
+  const tryBg = !!bg && bg !== backgroundColor();
+  stage.toggleAttribute("data-trial-bg", tryBg);
+  if (tryBg) {
+    stage.style.setProperty("--trial-base", bg);
+    stage.style.setProperty("--trial-ink", ink(bg));
   }
-  wheel?.setBackdrop(tryBackground ? hex : backgroundColor());
+  wheel?.setBackdrop(bg);
+  stage.toggleAttribute("data-proof", Boolean(sample.length));
+  const label = caption || (sample.length ? "目前配色" : "移到色卡上試放");
+  sketch(el("live-proof"), sample, sampleRoles, businessUse, label, role);
+  sketch(el("catalog-proof"), sample, sampleRoles, businessUse, label, role);
 }
-function hover(candidate, borrow = false) {
+function hover(candidate, show = false, action = "add") {
   el("hover-code").textContent = candidate?.hex || "";
-  if (pinned && borrow) endTrial();
+  if (pinned && show) endTrial();
   if (pinned) return;
-  const next = borrow ? candidate?.hex : null;
-  if (next !== trial) {
-    trial = next;
-    trialProof(trial);
-  }
+  const hex = show ? candidate?.hex : null,
+    key = hex ? action + hex : null;
+  if (key === trial) return;
+  trial = key;
+  trialProof(hex, action);
 }
+const strip = el("proof-strip");
+function pointAtChosen(e) {
+  const chip = e.target.closest("[data-remove-hex]");
+  if (!chip || pinned || trial) return;
+  const i = picks.findIndex((p) => p.hex === chip.dataset.removeHex);
+  if (i < 0) return;
+  sketch(
+    el("live-proof"),
+    picks,
+    names,
+    businessUse,
+    names[i] + " " + picks[i].hex + " · " + picks[i].percent + "%",
+    names[i],
+  );
+}
+strip.addEventListener("pointerover", pointAtChosen);
+strip.addEventListener("focusin", pointAtChosen);
+function restoreSketch() {
+  if (!pinned && !trial)
+    sketch(el("live-proof"), picks, names, businessUse, "目前配色");
+}
+strip.addEventListener("pointerleave", restoreSketch);
+strip.addEventListener("focusout", restoreSketch);
 function endTrial() {
   pinned = false;
   trial = null;
@@ -299,9 +356,7 @@ function updateLink() {
 function choose(hex) {
   const next = appendColor(picks, hex);
   if (next === picks) return;
-  const used = names.slice(0, picks.length);
-  names[picks.length] =
-    defaults.find((r) => r !== "其他" && !used.includes(r)) || "其他";
+  names[picks.length] = nextRole(picks, names);
   picks = next;
   page = 0;
   browseAll = false;
@@ -389,10 +444,7 @@ function render() {
   const whole = !roleSet.includes("主色") || browseAll;
   updateBackground(background);
   const full = picks.length === LIMIT;
-  const nextRole =
-    defaults.find(
-      (r) => r !== "其他" && !names.slice(0, picks.length).includes(r),
-    ) || "點綴色";
+  const upcoming = nextRole(picks, names);
   const primary =
     picks[names.slice(0, picks.length).indexOf("主色")]?.hex || picks[0]?.hex;
   for (const b of el("directions").children)
@@ -424,11 +476,11 @@ function render() {
   hover(null);
   el("instruction").textContent = full
     ? "八色已齊。移動色紙交界，調整最後的比例。"
-    : "橫拖轉盤，點選加入" + nextRole + "。長按一張色紙，放開就能比較前後。";
+    : "滑鼠移入或長按試色，點選加入" + upcoming + "。橫拖可轉動色盤。";
   el("hub-role").textContent = full
     ? "配置完成"
     : picks.length
-      ? nextRole
+      ? upcoming
       : "選取主色";
   el("hub-letter").textContent = full ? "8" : letter(picks.length);
   el("choice-label").textContent = whole ? "色環選項" : "推薦配色";
@@ -449,6 +501,11 @@ function render() {
       chip.style.background = choice.hex;
       button.append(chip, make("span", choice.name));
       button.title = choice.hex;
+      bindPreview(
+        button,
+        () => hover(choice, true),
+        () => hover(null),
+      );
       button.onclick = () => choose(choice.hex);
       el("recommendations").append(button);
     }
@@ -519,7 +576,8 @@ fallback.onpointermove = (e) => {
     Math.hypot(e.clientX - fallbackHold.x, e.clientY - fallbackHold.y) > 8
   )
     clearHold();
-  if (!fallbackHold) hover(fallbackHit(e));
+  if (!fallbackHold)
+    hover(fallbackHit(e), e.pointerType !== "touch" && e.buttons === 0);
 };
 fallback.onpointerup = (e) => {
   if (fallbackHold?.id !== e.pointerId) return;
@@ -617,6 +675,10 @@ const catalog = setupCatalog(
     el("desk-feedback").textContent = "已套用 " + picks.length + " 色。";
   },
   () => [picks[names.slice(0, picks.length).indexOf("主色")]?.hex || "", style],
+  (colors) => {
+    trial = null;
+    trialProof(null, "add", colors);
+  },
 );
 
 el("open-library").onclick = el("find-hunt").onclick = () => catalog.open();

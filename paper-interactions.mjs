@@ -1,4 +1,4 @@
-import { appendColor, letter } from "./mixer-data.mjs";
+import { letter } from "./mixer-data.mjs";
 
 export function transfer(picks, index, delta) {
   if (!picks[index + 1] || !picks[index] || !Number.isFinite(delta))
@@ -17,14 +17,12 @@ export function transfer(picks, index, delta) {
 
 const el = (id) => document.getElementById(id);
 
-export function drawProof(picks, hex) {
-  const sample = hex ? appendColor(picks, hex) : picks;
-  const trial = sample !== picks;
-  el("proof-state").textContent = trial
-    ? "試放 " + hex + "　" + sample.at(-1).percent + "%"
-    : picks.length
+export function drawProof(picks, sample = picks, caption = "") {
+  el("proof-state").textContent =
+    caption ||
+    (picks.length
       ? "已選 " + picks.length + " 色 · 點色塊移除"
-      : "長按色紙，在這裡試色";
+      : "移入色紙試色，點選加入");
   const parts = sample.map((p) => {
     const selected = picks.some((pick) => pick.hex === p.hex);
     const part = document.createElement(selected ? "button" : "i");

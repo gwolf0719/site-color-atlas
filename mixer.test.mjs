@@ -193,3 +193,25 @@ test("移除任意已選色後保持次序與相對面積，零色及單色可�
   assert.equal(removeColor(picks, "#ababab"), picks);
   assert.equal(picks.length, 3);
 });
+
+import { backgroundSample, nextRole } from "./live-proof.mjs";
+test("移入預覽依缺少的角色試放，替換背景維持百分比且保留正式配色", () => {
+  const picks = decode("4659A8-60.000000-30.FEFEFE-10");
+  const names = ["主色", "背景", "輔助色"];
+  const original = encode(picks);
+  const sample = backgroundSample(picks, names, "#FEFEFE");
+  assert.deepEqual(
+    sample.picks.map((p) => p.hex),
+    ["#4659A8", "#FEFEFE", "#000000"],
+  );
+  assert.deepEqual(
+    sample.picks.map((p) => p.percent),
+    [60, 30, 10],
+  );
+  assert.equal(encode(picks), original);
+  assert.equal(nextRole([], []), "主色");
+  assert.equal(nextRole(picks.slice(0, 1), ["主色"]), "背景");
+  assert.equal(nextRole(picks.slice(0, 2), names), "輔助色");
+  assert.equal(nextRole(picks, names), "其他");
+  assert.deepEqual(backgroundSample([], [], "#000000").roles, ["背景"]);
+});
