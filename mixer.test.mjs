@@ -119,4 +119,34 @@ test("協調與高反差產生不同推薦，後者符合主色對比門檻", ()
   assert.deepEqual(defaults.slice(0, 4), ["主色", "背景", "輔助色", "其他"]);
 });
 
-test("高反差候選未滿一整批時可正常呈現",()=>{const result=candidates(decode("CB2957-20.EEEEEE-16.000000-9.DDDDDD-55"),"bold");assert.ok(result.length>0 && result.length<72);assert.ok(result.every(c=>ratio(c.hex,"#CB2957")>=3));});
+test("高反差候選未滿一整批時可正常呈現", () => {
+  const result = candidates(
+    decode("CB2957-20.EEEEEE-16.000000-9.DDDDDD-55"),
+    "bold",
+  );
+  assert.ok(result.length > 0 && result.length < 72);
+  assert.ok(result.every((c) => ratio(c.hex, "#CB2957") >= 3));
+});
+
+import { transfer } from "./paper-interactions.mjs";
+test("移動交界只交換相鄰面積，保留來源與總量", () => {
+  const original = [
+    { hex: "#000000", percent: 65 },
+    { hex: "#707070", percent: 30 },
+    { hex: "#FEFEFE", percent: 5 },
+  ];
+  for (const [delta, expected] of [
+    [9, [74, 21, 5]],
+    [-200, [1, 94, 5]],
+    [120, [94, 1, 5]],
+  ]) {
+    assert.deepEqual(
+      transfer(original, 0, delta).map((p) => p.percent),
+      expected,
+    );
+  }
+  assert.deepEqual(
+    original.map((p) => p.percent),
+    [65, 30, 5],
+  );
+});

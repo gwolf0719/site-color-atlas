@@ -1,134 +1,163 @@
+// 紙張沿圓心排開。每張有厚度、捲起的外緣與未上墨的紙邊。
 import {
   BufferGeometry,
   Float32BufferAttribute,
+  Color,
   PlaneGeometry,
   ShaderMaterial,
   Mesh,
   Scene,
-  Color,
-  Vector2,
 } from "./vendor/three.js";
 
-// 色片有扭轉的曲面與脊線，選色使用同一張可見網格進行射線測試。
-export function pleatedSector(start, end, folds) {
-  const positions = [],
+export function paperLeaf(hex, width) {
+  const ink = new Color(hex),
+    stock = new Color("#DBDCE3"),
+    edge = new Color("#ABAAB2");
+  const points = [],
+    colors = [],
     indices = [];
-  const radial = 12,
-    angular = folds * 8;
-  for (let j = 0; j <= angular; j++) {
-    const t = j / angular,
-      angle = start + (end - start) * t;
-    const ridge = 0.5 - 0.5 * Math.cos(t * folds * 2 * Math.PI);
-    for (let i = 0; i <= radial; i++) {
-      const u = i / radial;
-      const a = angle + 0.28 * Math.sin(u * 1.45) - 0.1 * u * u;
-      const r =
-        1.05 +
-        1.09 * u +
-        0.09 * Math.sin(3 * angle + 0.4) * u * u +
-        0.1 * ridge * u;
-      const z =
-        0.31 * Math.sin(u * Math.PI) +
-        0.27 * ridge * (0.45 + u) +
-        0.23 * Math.sin(2 * angle + 0.5) * u;
-      positions.push(r * Math.cos(a), r * Math.sin(a), z);
-      if (j < angular && i < radial) {
-        const n = j * (radial + 1) + i;
-        indices.push(
-          n,
-          n + 1,
-          n + radial + 2,
-          n,
-          n + radial + 2,
-          n + radial + 1,
+  function vertex(u, t, side) {
+    const r = -0.22 + 2.7 * t;
+    const bend = 0.045 * Math.sin(t * 2.65) + 0.02 * u * t;
+    points.push(
+      r,
+      bend + u * width * (0.85 + 0.15 * t),
+      0.035 +
+        0.11 * t * t +
+        0.014 * u * t +
+        0.013 * Math.sin(t * Math.PI) +
+        (side === 2 ? 0.002 : side ? -0.011 : 0),
+    );
+  }
+  function quad(a, b, c, d, color) {
+    const offset = points.length / 3;
+    for (const v of [a, b, c, d]) {
+      vertex(...v);
+      colors.push(color.r, color.g, color.b);
+    }
+    indices.push(
+      offset,
+      offset + 1,
+      offset + 2,
+      offset,
+      offset + 2,
+      offset + 3,
+    );
+  }
+  // 紙片邊緣呈圓角，色紙外端保留一段標籤區。
+  const sections = [
+    0, 0.1, 0.25, 0.45, 0.62, 0.735, 0.825, 0.88, 0.968, 0.981, 1,
+  ];
+  function bound(t) {
+    return t === 1 ? 0.86 : t === 0 ? 0.72 : 1;
+  }
+  for (let i = 0; i < sections.length - 1; i++) {
+    const a = sections[i],
+      b = sections[i + 1],
+      wa = bound(a),
+      wb = bound(b);
+    const face =
+      a >= 0.88
+        ? stock
+        : a >= 0.825
+          ? ink.clone().lerp(stock, 0.36)
+          : a >= 0.735
+            ? ink.clone().lerp(stock, 0.15)
+            : ink;
+    quad([-wa, a, 0], [-wb, b, 0], [wb, b, 0], [wa, a, 0], face);
+    quad([wa, a, 1], [wb, b, 1], [-wb, b, 1], [-wa, a, 1], edge);
+    quad([-wa, a, 1], [-wb, b, 1], [-wb, b, 0], [-wa, a, 0], edge);
+    quad([wa, a, 0], [wb, b, 0], [wb, b, 1], [wa, a, 1], edge);
+  }
+  quad([-0.86, 1, 0], [-0.86, 1, 1], [0.86, 1, 1], [0.86, 1, 0], stock);
+  // 將末兩位色碼印在每個標籤露出的紙角。
+  const glyphs = [
+    "75557",
+    "26227",
+    "71747",
+    "71717",
+    "55711",
+    "74717",
+    "74757",
+    "71111",
+    "75757",
+    "75717",
+    "25755",
+    "65656",
+    "34443",
+    "65556",
+    "74647",
+    "74644",
+  ];
+  const print = new Color("#3B3844");
+  [...hex.slice(-2)].forEach((char, letter) => {
+    const glyph = glyphs[parseInt(char, 16)];
+    [...glyph].forEach((mask, row) => {
+      for (let col = 0; col < 3; col++) {
+        if (!(Number(mask) & (4 >> col))) continue;
+        const u = 0.46 + (letter * 4 + col) * 0.047,
+          t = 0.955 - row * 0.0065;
+        quad(
+          [u, t, 2],
+          [u, t - 0.0065, 2],
+          [u + 0.047, t - 0.0065, 2],
+          [u + 0.047, t, 2],
+          print,
         );
       }
-    }
-  }
-  const geometry = new BufferGeometry();
-  geometry.setAttribute("position", new Float32BufferAttribute(positions, 3));
-  geometry.setIndex(indices);
-  geometry.computeVertexNormals();
-  return geometry;
+    });
+  });
+  const g = new BufferGeometry();
+  g.setAttribute("position", new Float32BufferAttribute(points, 3));
+  g.setAttribute("color", new Float32BufferAttribute(colors, 3));
+  g.setIndex(indices);
+  g.computeVertexNormals();
+  return g;
 }
 
-// 滿版背景與色輪共用同一個 WebGLRenderer。背景的細線沿流動曲面展開。
+// 以取樣紙面為背景，唯有裝置附近投下柔邊陰影。
 export function fabric() {
   const scene = new Scene();
-  const tint = new Color("#9869A1").convertLinearToSRGB(),
-    target = tint.clone();
   const uniforms = {
     base: { value: new Color() },
-    explicitBase: { value: 0 },
+    center: { value: [0.67, 0.49] },
+    extent: { value: [0.3, 0.3] },
     time: { value: 0 },
-    aspect: { value: 1 },
-    scroll: { value: 0 },
-    pulse: { value: 0 },
-    tint: { value: tint },
-    pointer: { value: new Vector2() },
   };
   const material = new ShaderMaterial({
     depthTest: false,
     depthWrite: false,
     uniforms,
     vertexShader:
-      "varying vec2 vUv; void main(){vUv=uv;gl_Position=vec4(position.xy,0.,1.);}",
-    fragmentShader: `
-    varying vec2 vUv;
-    uniform float time,aspect,scroll,pulse;
-    uniform vec3 tint,base;
-    uniform float explicitBase;
-    uniform vec2 pointer;
-    void main(){
-      vec2 uv=vUv;
-      vec2 p=vec2((uv.x-.5)*aspect,uv.y-.5);
-      float t=time*.23;
-      p+=pointer*.027;
-      p.y+=scroll*.13;
-      vec3 deep=vec3(.065,.059,.095);
-      vec3 col=mix(deep,vec3(.134,.107,.175),uv.y*.6+uv.x*.18);
-      for(int i=0;i<3;i++){
-        float f=float(i);
-        float flow=p.y+.21*sin(p.x*2.85+t+f*.65)+.115*sin(p.x*5.1-t*.63+f*.77);
-        float center=-.24+f*.25+.09*cos(p.x*2.1+t*.82+f);
-        float d=flow-center;
-        float edge=exp(-abs(d)*14.);
-        float cloth=exp(-abs(d+.09)*6.8)*smoothstep(.13,-.12,d);
-        float thread=.5+.5*cos(d*310.+sin(p.x*4.+t)*2.);
-        vec3 hue=mix(tint,vec3(.41,.45,.64),.17+f*.19);
-        col+=hue*(edge*.11+cloth*(.075+.042*thread));
-      }
-      float dist=length(vec2((uv.x-.71)*aspect,uv.y-.49));
-      col+=tint*.115*exp(-dist*2.2);
-      col+=tint*.065*pulse*exp(-abs(dist-(1.-pulse)*1.3)*22.);
-      col*=.84+.16*smoothstep(0.,.65,uv.x);
-      vec3 relief=col-vec3(.08,.07,.11);
-      float brightness=dot(base,vec3(.2126,.7152,.0722));
-      vec3 applied=clamp(base+(1.-2.*brightness)*relief*.42,vec3(0.),vec3(.996));
-      gl_FragColor=vec4(mix(col,applied,explicitBase),1.);
-    }`.replace("smoothstep(.13,-.12,d)", "(1.-smoothstep(-.12,.13,d))"),
+      "varying vec2 uv0;void main(){uv0=uv;gl_Position=vec4(position.xy,0.,1.);}",
+    fragmentShader: `varying vec2 uv0;uniform vec3 base;uniform vec2 center,extent;uniform float time;
+ void main(){vec2 p=(uv0-center)/extent; p.x+=p.y*.19;
+ float soft=exp(-dot(p,p)*2.5); float contact=exp(-dot(p,p)*9.);
+ float grain=fract(sin(dot(floor(gl_FragCoord.xy),vec2(.1273,17.143)))*4375.35)-.5;
+ vec3 col=base*(1.-.22*soft-.105*contact);
+ col+=.010*(uv0.y-.4)+grain*.014+.004*sin(uv0.x*5.+time*.12);
+ gl_FragColor=vec4(clamp(col,0.,.996),1.);}`,
   });
-  const plane = new Mesh(new PlaneGeometry(2, 2), material);
+  const g = new PlaneGeometry(2, 2),
+    plane = new Mesh(g, material);
   plane.frustumCulled = false;
   scene.add(plane);
   return {
     scene,
-    setColor(hex, background) {
-      uniforms.explicitBase.value = background ? 1 : 0;
-      if (background) uniforms.base.value.set(background).convertLinearToSRGB();
-      target.set(hex).convertLinearToSRGB();
+    setColor(background) {
+      uniforms.base.value.set(background || "#D9DCE5").convertLinearToSRGB();
     },
-    frame(time, aspect, scroll, pulse, x, y, still) {
-      tint.lerp(target, still ? 1 : 0.09);
-      uniforms.time.value = time;
-      uniforms.aspect.value = aspect;
-      uniforms.scroll.value = scroll;
-      uniforms.pulse.value = pulse;
-      uniforms.pointer.value.set(x, y);
+    frame(t, view, w, h) {
+      uniforms.time.value = t;
+      uniforms.center.value = [
+        (view.x + view.w * 0.54) / w,
+        (view.y + view.h * 0.38) / h,
+      ];
+      uniforms.extent.value = [(view.w * 0.43) / w, (view.h * 0.28) / h];
     },
     dispose() {
+      g.dispose();
       material.dispose();
-      plane.geometry.dispose();
     },
   };
 }

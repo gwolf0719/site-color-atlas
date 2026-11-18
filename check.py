@@ -34,7 +34,7 @@ for p in rows:
         ratio = (high+.05)/(low+.05)
         assert ratio >= 4.5, (p['id'],a,b,ratio)
         minimum = min(ratio,minimum)
-for name in ('index.html','style.css','app.js','mixer.css','mixer.js','ring.js','mixer-data.mjs'):
+for name in ('index.html','style.css','app.js','mixer.css','mixer.js','ring.js','mixer-data.mjs','chromatic-scene.js','exhibition.css','paper-interactions.mjs'):
     assert not FORBIDDEN.intersection(re.findall(r'#([0-9A-F]{6})\b',(root/name).read_text().upper()))
 print(f'{len(rows)} 組色卡，{len(rows)*len(PAIRS)} 組文字配對，最低 {minimum:.2f}∶1。')
 

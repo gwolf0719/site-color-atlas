@@ -1,3 +1,4 @@
+import { drawProof, seamControls } from "./paper-interactions.mjs";
 import {
   roles,
   defaults,
@@ -7,7 +8,7 @@ import {
   ratio,
 } from "./color-rules.mjs";
 import { huntUrl } from "./hunt.js";
-import { layer, spectrum, safe } from "./spectrum.mjs";
+import { layer, safe } from "./spectrum.mjs";
 import {
   LIMIT,
   letter,
@@ -72,8 +73,8 @@ function rolePreview() {
         "∶1。" +
         (ratio(c.primary, c.bg) >= 4.5
           ? "此配對可用於一般文字。"
-          : "主色適合色塊，內文使用預覽中的高對比字色。")
-      : "預覽暫用預設值補足未指定的角色。";
+          : "主色適合大色塊，內文請另選對比足夠的字色。")
+      : "指定主色與背景後，這裡會顯示兩色的文字對比。";
 }
 let page = 0,
   browseAll = false;
@@ -92,7 +93,7 @@ function backgroundColor() {
 function setBackground(hex) {
   if (!safe(hex)) {
     el("bg-feedback").textContent = "這個色碼在團隊排除範圍，請換一個色碼。";
-    el("custom-bg").value = backgroundColor() || "#191622";
+    el("custom-bg").value = backgroundColor() || "#D9DCE5";
     return;
   }
   const bg = names.slice(0, picks.length).indexOf("背景"),
@@ -125,7 +126,7 @@ function updateBackground(hex) {
     stage.style.setProperty("--canvas-ink", ink(hex));
     el("custom-bg").value = hex;
   }
-  if(!hex)el("custom-bg").value="#191622";
+  if (!hex) el("custom-bg").value = "#D9DCE5";
   el("current-bg").textContent = hex ? "底色 " + hex : "底色未指定";
   for (const b of el("gray-swatches").children) {
     const selected =
@@ -177,9 +178,76 @@ el("gray-action").onchange = () => {
 };
 el("custom-bg").onchange = () =>
   setBackground(el("custom-bg").value.toUpperCase());
-function hover(candidate) {
-  el("hover-code").textContent =
-    candidate?.hex || (picks.length === LIMIT ? "100%" : "");
+let pinned = false,
+  trial = null;
+function trialProof(hex) {
+  drawProof(picks, hex);
+  const stage = el("wheel-host").parentElement;
+  const tryBackground =
+    !!hex &&
+    names.slice(0, picks.length).includes("主色") &&
+    !backgroundColor();
+  stage.toggleAttribute("data-trial-bg", tryBackground);
+  if (tryBackground) {
+    stage.style.setProperty("--trial-base", hex);
+    stage.style.setProperty("--trial-ink", ink(hex));
+  }
+  wheel?.setBackdrop(tryBackground ? hex : backgroundColor());
+}
+function hover(candidate, borrow = false) {
+  el("hover-code").textContent = candidate?.hex || "";
+  if (pinned && borrow) endTrial();
+  if (pinned) return;
+  const next = borrow ? candidate?.hex : null;
+  if (next !== trial) {
+    trial = next;
+    trialProof(trial);
+  }
+}
+function endTrial() {
+  pinned = false;
+  trial = null;
+  el("compare").setAttribute("aria-pressed", "false");
+  el("compare").textContent = "試放此色";
+  trialProof();
+}
+el("compare").onclick = () => {
+  if (pinned) return endTrial();
+  pinned = true;
+  el("compare").setAttribute("aria-pressed", "true");
+  el("compare").textContent = "結束試放";
+  trialProof(el("color-choice").value);
+};
+el("color-choice").onchange = () => {
+  if (pinned) trialProof(el("color-choice").value);
+};
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") endTrial();
+});
+const seams = seamControls(
+  () => picks,
+  (next) => {
+    picks = next;
+    syncRatios();
+  },
+  () => {
+    updateLink();
+    wheel?.update(options, picks, backgroundColor());
+  },
+);
+function syncRatios() {
+  [...el("allocations").querySelectorAll("input")].forEach(
+    (field, i) => (field.value = picks[i].percent),
+  );
+  [...el("proportion").children].forEach((span, i) => {
+    const p = picks[i];
+    span.style.width = p.percent + "%";
+    span.title = letter(i) + " " + p.hex + " " + p.percent + "%";
+  });
+  seams.sync();
+  endTrial();
+  copyTicket++;
+  el("mix-feedback").textContent = "比例已調整，合計 100%。";
 }
 function updateLink() {
   const url = new URL(location.href);
@@ -234,18 +302,8 @@ function refreshOutput() {
       if (!Number.isFinite(value)) return;
       picks = adjust(startingWeights || picks, i, value);
       updateLink();
-      // 保留目前輸入框與焦點，讓鍵盤可連續調整。
-      [...list.querySelectorAll("input")].forEach(
-        (field, j) => (field.value = picks[j].percent),
-      );
-      [...bar.children].forEach((span, j) => {
-        span.style.width = picks[j].percent + "%";
-        span.title =
-          letter(j) + " " + picks[j].hex + " " + picks[j].percent + "%";
-      });
+      syncRatios();
       wheel?.update(options, picks, backgroundColor());
-      copyTicket++;
-      el("mix-feedback").textContent = "比例已調整，合計 100%。";
     };
     input.onblur = () => {
       input.value = picks[i].percent;
@@ -273,7 +331,7 @@ function refreshOutput() {
   for (const id of ["undo", "reset", "copy-mix", "share-mix"])
     el(id).disabled = !picks.length;
   el("mix-empty").hidden = Boolean(picks.length);
-  el("find-hunt").hidden = !names.slice(0,picks.length).includes("主色");
+  el("find-hunt").hidden = !names.slice(0, picks.length).includes("主色");
 }
 function render() {
   copyTicket++;
@@ -286,17 +344,6 @@ function render() {
     defaults.find(
       (r) => r !== "其他" && !names.slice(0, picks.length).includes(r),
     ) || "點綴色";
-  const title = el("mix-title"),
-    lead = !picks.length ? "選一個" : full ? "配色" : "加入";
-  const emphasis = full ? "完成。" : nextRole + "。";
-  if (title.dataset.caption !== lead + emphasis) {
-    title.replaceChildren(
-      document.createTextNode(lead),
-      document.createElement("br"),
-      make("em", emphasis),
-    );
-    title.dataset.caption = lead + emphasis;
-  }
   const primary =
     picks[names.slice(0, picks.length).indexOf("主色")]?.hex || picks[0]?.hex;
   const directory = mixParams(new URL("library.html", location.href));
@@ -330,15 +377,9 @@ function render() {
   el("brand-color").hidden = full;
   el("hex-feedback").textContent = "";
   hover(null);
-  el("instruction").textContent = !roleSet.includes("主色")
-    ? "從 " +
-      spectrum.length.toLocaleString("zh-TW") +
-      " 個色階挑選主色。切換明度與彩度，或直接點選色環。"
-    : full
-      ? "八個顏色已選齊。到下方調整面積比例，即可複製配置表。"
-      : "點選色環或下方推薦色加入 " +
-        letter(picks.length) +
-        " 色。新增顏色會以較小面積加入。";
+  el("instruction").textContent = full
+    ? "八色已齊。移動色紙交界，調整最後的比例。"
+    : "橫拖轉盤，點選加入" + nextRole + "。長按一張色紙，放開就能比較前後。";
   el("hub-role").textContent = full
     ? "配置完成"
     : picks.length
@@ -369,7 +410,10 @@ function render() {
   }
   el("color-choice").disabled = full;
   el("add-color").disabled = full;
-  el("add-color").textContent = roleSet.includes("主色") ? "加入搭配色" : "設為主色";
+  el("compare").disabled = full;
+  el("add-color").textContent = roleSet.includes("主色")
+    ? "加入搭配色"
+    : "設為主色";
   const bands = options.length
     ? options.map((c) => ({ ...c, percent: 100 / options.length }))
     : picks;
@@ -384,6 +428,8 @@ function render() {
   wheel?.update(options, picks, backgroundColor());
   el("mix-feedback").textContent = "";
   refreshOutput();
+  seams.build();
+  endTrial();
   rolePreview();
 }
 function fallbackHit(e) {
@@ -395,12 +441,48 @@ function fallbackHit(e) {
   const turn = (Math.atan2(x, -y) / (2 * Math.PI) + 1) % 1;
   return options[Math.floor(turn * options.length)];
 }
-el("ring-fallback").onclick = (e) => {
-  const c = fallbackHit(e);
-  if (c) choose(c.hex);
+const fallback = el("ring-fallback");
+let fallbackHold;
+function clearHold() {
+  if (fallbackHold) clearTimeout(fallbackHold.timer);
+  fallbackHold = null;
+  hover(null);
+}
+fallback.onpointerdown = (e) => {
+  const candidate = fallbackHit(e);
+  if (!candidate || fallbackHold || e.button !== 0) return;
+  fallback.setPointerCapture(e.pointerId);
+  fallbackHold = {
+    candidate,
+    x: e.clientX,
+    y: e.clientY,
+    id: e.pointerId,
+    borrow: false,
+    timer: setTimeout(() => {
+      fallbackHold.borrow = true;
+      hover(candidate, true);
+    }, 340),
+  };
 };
-el("ring-fallback").onpointermove = (e) => hover(fallbackHit(e));
-el("ring-fallback").onpointerleave = () => hover(null);
+fallback.onpointermove = (e) => {
+  if (
+    fallbackHold &&
+    Math.hypot(e.clientX - fallbackHold.x, e.clientY - fallbackHold.y) > 8
+  )
+    clearHold();
+  if (!fallbackHold) hover(fallbackHit(e));
+};
+fallback.onpointerup = (e) => {
+  if (fallbackHold?.id !== e.pointerId) return;
+  const { borrow, candidate } = fallbackHold;
+  clearHold();
+  if (!borrow) choose(candidate.hex);
+};
+fallback.onpointercancel = fallback.onlostpointercapture = clearHold;
+fallback.onpointerleave = () => {
+  if (!fallbackHold) hover(null);
+};
+fallback.oncontextmenu = (e) => e.preventDefault();
 el("add-color").onclick = () => choose(el("color-choice").value);
 el("lightness").onchange = render;
 el("saturation").onchange = render;

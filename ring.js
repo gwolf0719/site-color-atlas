@@ -1,4 +1,4 @@
-import { fabric, pleatedSector } from "./chromatic-scene.js";
+import { fabric, paperLeaf } from "./chromatic-scene.js";
 import {
   WebGLRenderer,
   Scene,
@@ -13,10 +13,6 @@ import {
   Vector2,
   RingGeometry,
   DoubleSide,
-  BufferGeometry,
-  Float32BufferAttribute,
-  Points,
-  PointsMaterial,
 } from "./vendor/three.js";
 
 const TAU = 2 * Math.PI;
@@ -47,45 +43,40 @@ export function createWheel(host, onChoose, onHover, onLoss) {
   camera.position.z = 10;
   camera.updateProjectionMatrix();
   const rig = new Group(),
-    wedges = new Group(),
-    guides = new Group();
+    wedges = new Group();
   scene.add(rig, new HemisphereLight(0xe7e5f2, 0x6f556e, 1.55));
   const key = new DirectionalLight(0xf0ecf2, 2.65);
   key.position.set(-3, 4, 5);
   const rim = new DirectionalLight(0xa9b8e1, 1.55);
   rim.position.set(3, -2, 2);
   scene.add(key, rim);
-  rig.add(wedges, guides);
+  rig.add(wedges);
   const makeMaterial = (color) =>
     new MeshBasicMaterial({ color, side: DoubleSide });
-  const guideMaterial = makeMaterial("#626075");
-  for (const [r, width] of [
-    [1.01, 0.009],
-    [2.38, 0.012],
-    [2.67, 0.006],
-  ]) {
-    const ring = new Mesh(new RingGeometry(r, r + width, 180), guideMaterial);
-    ring.position.z = -0.14;
-    guides.add(ring);
-  }
-  const marks = [];
-  for (let i = 0; i < 72; i++) {
-    const angle = (TAU * i) / 72,
-      r = i % 6 === 0 ? 2.55 : 2.46;
-    marks.push(r * Math.cos(angle), r * Math.sin(angle), -0.12);
-  }
-  const geo = new BufferGeometry();
-  geo.setAttribute("position", new Float32BufferAttribute(marks, 3));
-  guides.add(
-    new Points(
-      geo,
-      new PointsMaterial({
-        color: "#A8A0BB",
-        size: 0.029,
-        sizeAttenuation: true,
-      }),
-    ),
+  const pin = new Mesh(
+    new RingGeometry(0.008, 0.135, 80),
+    makeMaterial("#938D96"),
   );
+  pin.position.z = 0.56;
+  rig.add(pin);
+  const cap = new Mesh(
+    new RingGeometry(0.088, 0.106, 64),
+    makeMaterial("#D0CCD0"),
+  );
+  cap.position.z = 0.57;
+  rig.add(cap);
+  let spin = 0.28,
+    velocity = 0,
+    gesture = null,
+    timer = 0,
+    flying = null,
+    previousCount = 0,
+    lastKey = "";
+  function stopGesture() {
+    clearTimeout(timer);
+    gesture = null;
+    onHover(null, false);
+  }
   const ray = new Raycaster(),
     cursor = new Vector2(),
     motion = matchMedia("(prefers-reduced-motion: reduce)");
@@ -109,6 +100,7 @@ export function createWheel(host, onChoose, onHover, onLoss) {
   const ratioBand = new Group();
   rig.add(ratioBand);
   function update(values, picks, background) {
+    receivedColor(picks);
     for (const segment of [...ratioBand.children]) {
       ratioBand.remove(segment);
       segment.geometry.dispose();
@@ -119,8 +111,8 @@ export function createWheel(host, onChoose, onHover, onLoss) {
       const arc = (TAU * pick.percent) / 100;
       const segment = new Mesh(
         new RingGeometry(
-          values.length ? 0.92 : 1.16,
-          values.length ? 1.015 : 2.23,
+          values.length ? 0.16 : 0.25,
+          values.length ? 0.23 : 2.23,
           Math.max(4, Math.ceil((100 * arc) / TAU)),
           1,
           startAngle - arc,
@@ -128,31 +120,70 @@ export function createWheel(host, onChoose, onHover, onLoss) {
         ),
         makeMaterial(pick.hex),
       );
-      segment.position.z = 0.16;
+      segment.position.z = 0.59;
       ratioBand.add(segment);
       startAngle -= arc;
     }
-    backdrop.setColor(picks.at(-1)?.hex || "#9869A1", background);
+    backdrop.setColor(background);
+    const geometryKey = values.map((v) => v.hex).join("");
+    if (geometryKey === lastKey) {
+      schedule();
+      return;
+    }
+    lastKey = geometryKey;
     clearWedges();
     options = values;
     active = null;
     intro = motion.matches ? 1 : 0;
     for (const [i, item] of values.entries()) {
-      const angle = TAU / values.length;
-      const start = Math.PI / 2 - angle * (i + 1) + 0.009,
-        end = Math.PI / 2 - angle * i - 0.009;
+      const theta =
+        -1.62 +
+        (i / Math.max(1, values.length - 1)) *
+          TAU *
+          (values.length <= 12 ? 0.62 : 0.87);
       const material = new MeshStandardMaterial({
-        color: item.hex,
+        vertexColors: true,
         side: DoubleSide,
-        roughness: 0.42,
-        metalness: 0.14,
+        roughness: 0.93,
+        metalness: 0,
       });
-      const folds = Math.max(1, Math.round(72 / values.length));
-      const mesh = new Mesh(pleatedSector(start, end, folds), material);
-      mesh.userData = { index: i, theta: (start + end) / 2, hover: 0 };
+      const mesh = new Mesh(
+        paperLeaf(
+          item.hex,
+          Math.min(0.57, Math.max(0.31, 6.2 / values.length)),
+        ),
+        material,
+      );
+      mesh.userData = { index: i, theta, hover: 0 };
       wedges.add(mesh);
     }
     schedule();
+  }
+  function removeFlying() {
+    if (!flying) return;
+    rig.remove(flying.mesh);
+    flying.mesh.geometry.dispose();
+    flying.mesh.material.dispose();
+    flying = null;
+  }
+  function receivedColor(picks) {
+    const index = options.findIndex((o) => o.hex === picks.at(-1)?.hex);
+    if (
+      picks.length > previousCount &&
+      !motion.matches &&
+      index >= 0 &&
+      wedges.children[index]
+    ) {
+      removeFlying();
+      const original = wedges.children[index],
+        mesh = original.clone();
+      mesh.geometry = original.geometry.clone();
+      mesh.material = original.material.clone();
+      mesh.rotation.z += wedges.rotation.z;
+      rig.add(mesh);
+      flying = { mesh, age: 0, theta: mesh.rotation.z };
+    }
+    previousCount = picks.length;
   }
   function draw(now) {
     frame = 0;
@@ -161,55 +192,63 @@ export function createWheel(host, onChoose, onHover, onLoss) {
     last = now;
     elapsed += dt;
     intro = motion.matches ? 1 : Math.min(1, intro + 0.91 * dt);
-    const smooth = 1 - (1 - intro) ** 3;
-    rig.rotation.x = motion.matches
-      ? -0.25
-      : -0.32 +
-        0.13 * Math.sin(elapsed * 0.48) +
-        pointerY * 0.1 +
-        scrollProgress * 0.48;
-    rig.rotation.y = motion.matches
-      ? -0.09
-      : -0.09 + 0.17 * Math.sin(elapsed * 0.39) + pointerX * 0.12;
-    wedges.rotation.z = motion.matches
-      ? 0
-      : (1 - smooth) * 1.36 +
-        0.055 * Math.sin(elapsed * 0.37) +
-        scrollProgress * 0.24;
-    guides.rotation.z = motion.matches ? 0 : elapsed * 0.06;
-    wedges.scale.setScalar(0.71 + 0.29 * smooth);
+
+    if (!gesture && !motion.matches) {
+      spin += velocity * dt;
+      velocity *= Math.exp(-5 * dt);
+    }
+    rig.rotation.x =
+      -0.68 +
+      (motion.matches
+        ? 0
+        : 0.04 * Math.sin(elapsed * 0.47) +
+          pointerY * 0.075 +
+          scrollProgress * 0.17);
+    rig.rotation.y =
+      -0.19 +
+      (motion.matches ? 0 : 0.05 * Math.sin(elapsed * 0.41) + pointerX * 0.095);
+    wedges.rotation.z = spin + 0.1;
     for (const mesh of wedges.children) {
-      const m = mesh.userData;
-      const goal = m.index === active ? 1 : 0;
-      m.hover = motion.matches
-        ? goal
-        : m.hover + (goal - m.hover) * Math.min(1, dt * 12);
-      const stagger = motion.matches
-        ? 1
-        : Math.min(
-            1,
-            Math.max(0, intro * 1.3 - (m.index / options.length) * 0.27),
-          );
-      const sweep = (1 - stagger) ** 2;
-      const offset = 0.145 * m.hover + 0.66 * sweep;
-      mesh.rotation.z = sweep * 0.4;
+      const m = mesh.userData,
+        ready = motion.matches
+          ? 1
+          : Math.max(
+              0,
+              Math.min(
+                1,
+                intro * 1.25 - (m.index / Math.max(1, options.length)) * 0.22,
+              ),
+            );
+      const spring = 1 - (1 - ready) ** 3;
+      m.hover +=
+        ((m.index === active ? 1 : 0) - m.hover) *
+        (motion.matches ? 1 : Math.min(1, dt * 13));
+      const angle = -1.62 + (m.theta + 1.62) * spring;
+      mesh.rotation.set(0.04, 0.035, angle);
+      const d = 0.26 * m.hover;
       mesh.position.set(
-        Math.cos(m.theta) * offset,
-        Math.sin(m.theta) * offset,
-        0.32 * m.hover +
-          0.4 * sweep +
-          (motion.matches ? 0 : 0.032 * Math.sin(elapsed * 1.2 + m.theta * 2)),
+        d * Math.cos(angle),
+        d * Math.sin(angle),
+        0.011 * m.index + 0.14 * m.hover,
       );
     }
-    const still = motion.matches;
+    if (flying) {
+      flying.age += dt;
+      const u = Math.min(1, flying.age / 0.59);
+      flying.mesh.position.set(
+        (0.3 + u * 0.42) * Math.cos(flying.theta),
+        (0.3 + u * 0.42) * Math.sin(flying.theta),
+        0.7 + u * 0.8,
+      );
+      flying.mesh.scale.setScalar(1 - u * 0.86);
+      flying.mesh.rotation.z = flying.theta + u * 0.54;
+      if (u === 1) removeFlying();
+    }
     backdrop.frame(
-      still ? 0 : elapsed,
-      canvasWidth / canvasHeight,
-      still ? 0 : scrollProgress,
-      still ? 0 : 1 - smooth,
-      pointerX,
-      pointerY,
-      still,
+      motion.matches ? 0 : elapsed,
+      view,
+      canvasWidth,
+      canvasHeight,
     );
     renderer.setViewport(0, 0, canvasWidth, canvasHeight);
     renderer.clear();
@@ -235,24 +274,98 @@ export function createWheel(host, onChoose, onHover, onLoss) {
       null
     );
   }
+  orbit.onpointerdown = (e) => {
+    if (e.button !== 0 || gesture) return;
+    const index = hit(e);
+    gesture = {
+      id: e.pointerId,
+      x: e.clientX,
+      y: e.clientY,
+      spin,
+      index,
+      drag: false,
+      borrow: false,
+      last: e.clientX,
+      time: e.timeStamp,
+    };
+    velocity = 0;
+    orbit.setPointerCapture(e.pointerId);
+    if (index !== null)
+      timer = setTimeout(() => {
+        if (gesture && !gesture.drag) {
+          gesture.borrow = true;
+          active = index;
+          onHover(options[index], true);
+          schedule();
+        }
+      }, 340);
+  };
   orbit.onpointermove = (e) => {
-    active = hit(e);
-    pointerX = cursor.x;
-    pointerY = cursor.y;
-    orbit.style.cursor = active === null ? "default" : "pointer";
-    onHover(options[active] || null);
+    if (gesture && e.pointerId === gesture.id) {
+      const dx = e.clientX - gesture.x,
+        dy = e.clientY - gesture.y;
+      if (!gesture.drag && Math.abs(dy) > 10 && Math.abs(dy) > Math.abs(dx)) {
+        stopGesture();
+        return;
+      }
+      if (!gesture.borrow && Math.abs(dx) > 7) {
+        gesture.drag = true;
+        clearTimeout(timer);
+      }
+      if (gesture.drag) {
+        spin = gesture.spin + (dx / Math.max(1, view.w)) * TAU * 0.85;
+        velocity = Math.max(
+          -3,
+          Math.min(
+            3,
+            ((((e.clientX - gesture.last) /
+              Math.max(10, e.timeStamp - gesture.time)) *
+              1000) /
+              view.w) *
+              TAU *
+              0.85,
+          ),
+        );
+        gesture.last = e.clientX;
+        gesture.time = e.timeStamp;
+        active = null;
+        onHover(null, false);
+      }
+    } else {
+      active = hit(e);
+      pointerX = cursor.x;
+      pointerY = cursor.y;
+      orbit.style.cursor = active === null ? "grab" : "pointer";
+      onHover(options[active] || null, false);
+    }
     schedule();
+  };
+  orbit.onpointerup = (e) => {
+    if (!gesture || gesture.id !== e.pointerId) return;
+    const { index, drag, borrow } = gesture;
+    stopGesture();
+    active = null;
+    if (!drag && !borrow && index !== null && options[index])
+      onChoose(options[index].hex);
+    schedule();
+  };
+  orbit.onpointercancel = orbit.onlostpointercapture = () => {
+    if (gesture) {
+      stopGesture();
+      active = null;
+      schedule();
+    }
   };
   orbit.onpointerleave = () => {
-    active = null;
-    pointerX = pointerY = 0;
-    onHover(null);
-    schedule();
+    if (!gesture) {
+      active = null;
+      pointerX = pointerY = 0;
+      onHover(null, false);
+      schedule();
+    }
   };
-  orbit.onclick = (e) => {
-    const i = hit(e) ?? active;
-    if (i !== null && options[i]) onChoose(options[i].hex);
-  };
+  orbit.oncontextmenu = (e) => e.preventDefault();
+  window.addEventListener("blur", stopGesture);
   function resize() {
     const whole = host.getBoundingClientRect(),
       square = orbit.getBoundingClientRect();
@@ -266,7 +379,7 @@ export function createWheel(host, onChoose, onHover, onLoss) {
       w: square.width,
       h: square.height,
     };
-    const half = 2.79,
+    const half = 2.48,
       aspect = view.w / view.h;
     camera.left = -half * aspect;
     camera.right = half * aspect;
@@ -308,6 +421,15 @@ export function createWheel(host, onChoose, onHover, onLoss) {
       orbit.onclick = null;
       orbit.onpointermove = null;
       orbit.onpointerleave = null;
+      stopGesture();
+      window.removeEventListener("blur", stopGesture);
+      orbit.onpointerdown =
+        orbit.onpointerup =
+        orbit.onpointercancel =
+        orbit.onlostpointercapture =
+        orbit.oncontextmenu =
+          null;
+      removeFlying();
       clearWedges();
       backdrop.dispose();
       renderer.dispose();
@@ -318,5 +440,11 @@ export function createWheel(host, onChoose, onHover, onLoss) {
   );
   running = true;
   resize();
-  return { update };
+  return {
+    update,
+    setBackdrop(hex) {
+      backdrop.setColor(hex);
+      schedule();
+    },
+  };
 }

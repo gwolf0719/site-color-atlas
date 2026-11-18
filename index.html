@@ -3,15 +3,15 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <meta name="theme-color" content="#191622" />
-    <title>配色標本室｜互動色環</title>
+    <meta name="theme-color" content="#D9DCE5" />
+    <title>配色標本室｜色紙轉盤</title>
     <meta
       name="description"
       content="點選立體色環，探索協調或鮮明高反差的配色，將色碼與面積比例整段複製給 AI。"
     />
-    <link rel="stylesheet" href="style.css?v=achromatic-1" />
-    <link rel="stylesheet" href="mixer.css?v=achromatic-1" />
-    <link rel="stylesheet" href="exhibition.css?v=achromatic-1" />
+    <link rel="stylesheet" href="style.css?v=paper-press-1" />
+    <link rel="stylesheet" href="mixer.css?v=paper-press-1" />
+    <link rel="stylesheet" href="exhibition.css?v=paper-press-1" />
     <script>
       if (["#hunt", "#library", "#preview", "#sources"].includes(location.hash))
         location.replace("./library.html" + location.search + location.hash);
@@ -19,19 +19,20 @@
     <script type="importmap">
       {
         "imports": {
-          "./app.js": "./app.js?v=achromatic-1",
-          "./mixer.js": "./mixer.js?v=achromatic-1",
-          "./mixer-data.mjs": "./mixer-data.mjs?v=achromatic-1",
-          "./spectrum.mjs": "./spectrum.mjs?v=achromatic-1",
-          "./color-rules.mjs": "./color-rules.mjs?v=achromatic-1",
-          "./hunt.js": "./hunt.js?v=achromatic-1",
-          "./ring.js": "./ring.js?v=achromatic-1",
-          "./chromatic-scene.js": "./chromatic-scene.js?v=achromatic-1",
-          "./vendor/three.js": "./vendor/three.js?v=achromatic-1"
+          "./paper-interactions.mjs": "./paper-interactions.mjs?v=paper-press-1",
+          "./app.js": "./app.js?v=paper-press-1",
+          "./mixer.js": "./mixer.js?v=paper-press-1",
+          "./mixer-data.mjs": "./mixer-data.mjs?v=paper-press-1",
+          "./spectrum.mjs": "./spectrum.mjs?v=paper-press-1",
+          "./color-rules.mjs": "./color-rules.mjs?v=paper-press-1",
+          "./hunt.js": "./hunt.js?v=paper-press-1",
+          "./ring.js": "./ring.js?v=paper-press-1",
+          "./chromatic-scene.js": "./chromatic-scene.js?v=paper-press-1",
+          "./vendor/three.js": "./vendor/three.js?v=paper-press-1"
         }
       }
     </script>
-    <script type="module" src="mixer.js?v=achromatic-1"></script>
+    <script type="module" src="mixer.js?v=paper-press-1"></script>
   </head>
   <body>
     <header>
@@ -49,8 +50,13 @@
         <div class="stage">
           <div id="wheel-host" aria-hidden="true"></div>
           <div class="stage-copy">
-            <h1 id="mix-title">選一個<br /><em>主色。</em></h1>
-            <p id="instruction"></p>
+            <div class="stage-intro">
+              <div class="specimen-caption">
+                <span id="hub-letter">A</span><span id="hub-role">主色</span>
+              </div>
+              <h1 id="mix-title">抽一張<br /><em>色紙。</em></h1>
+              <p id="instruction"></p>
+            </div>
             <div class="choice-area">
               <div
                 id="directions"
@@ -64,24 +70,6 @@
                 </button>
               </div>
               <p id="style-tip"></p>
-              <div class="background-settings">
-                <div class="background-line">
-                  <label for="gray-action">灰階</label
-                  ><select id="gray-action">
-                    <option value="background">設為底色</option>
-                    <option value="palette">加入配色</option></select
-                  ><output id="current-bg">底色未指定</output>
-                </div>
-                <div
-                  id="gray-swatches"
-                  role="group"
-                  aria-label="黑白灰色階"
-                ></div>
-                <label class="custom-background"
-                  >自訂底色 <input id="custom-bg" type="color" value="#191622"
-                /></label>
-                <span id="bg-feedback" role="status"></span>
-              </div>
               <div id="recommendations" aria-label="推薦配色"></div>
               <div class="mix-browse">
                 <a id="find-hunt" href="library.html#hunt" hidden
@@ -90,7 +78,7 @@
                 ><button id="switch-colors" hidden>瀏覽全色環</button>
               </div>
               <details id="precision">
-                <summary>精準選色</summary>
+                <summary>依色階或色碼挑選</summary>
                 <div class="precision-inside">
                   <div id="tones" class="tone-controls">
                     <label
@@ -98,8 +86,8 @@
                       <select id="lightness">
                         <option value="18">極深</option>
                         <option value="29">深色</option>
-                        <option value="40" selected>中深</option>
-                        <option value="50">中等</option>
+                        <option value="40">中深</option>
+                        <option value="50" selected>中等</option>
                         <option value="62">明亮</option>
                         <option value="74">淺色</option>
                       </select></label
@@ -116,6 +104,7 @@
                   <label for="color-choice" id="choice-label">色環選項</label>
                   <div class="choose">
                     <select id="color-choice"></select
+                    ><button id="compare" aria-pressed="false">試放此色</button
                     ><button id="add-color">加入配色</button>
                   </div>
                   <details id="brand-color">
@@ -138,13 +127,35 @@
           </div>
           <div class="orbit" id="orbit">
             <div id="ring-fallback" aria-hidden="true"></div>
-
-            <div class="hub" aria-hidden="true">
-              <small id="hub-role">選取主色</small
-              ><strong id="hub-letter">A</strong><span id="hover-code"></span>
+          </div>
+          <div class="stage-foot">
+            <div class="background-settings">
+              <div class="background-line">
+                <label for="gray-action">灰階</label
+                ><select id="gray-action">
+                  <option value="background">設為底色</option>
+                  <option value="palette">加入配色</option></select
+                ><output id="current-bg">底色未指定</output>
+              </div>
+              <div
+                id="gray-swatches"
+                role="group"
+                aria-label="黑白灰色階"
+              ></div>
+              <label class="custom-background"
+                >自訂底色 <input id="custom-bg" type="color" value="#D9DCE5"
+              /></label>
+              <span id="bg-feedback" role="status"></span>
+            </div>
+            <div class="sample-proof">
+              <div class="proof-head">
+                <span id="proof-state" role="status">試色紙</span
+                ><code id="hover-code"></code>
+              </div>
+              <div id="proof-strip" aria-hidden="true"></div>
+              <a class="downlink" href="#configuration">調整比例與複製配色 ↓</a>
             </div>
           </div>
-          <a class="downlink" href="#configuration">色碼配置表 ↓</a>
         </div>
         <div class="mix-output" id="configuration">
           <div class="section-head">
@@ -154,7 +165,17 @@
               ><button id="reset" disabled>重新選色</button>
             </div>
           </div>
-          <div id="proportion" aria-label="顏色面積比例"></div>
+          <div class="ratio-sheet">
+            <div id="proportion" aria-label="顏色面積比例"></div>
+            <div id="seams"></div>
+          </div>
+          <div id="pair-tools" hidden>
+            <label
+              >移動交界
+              <select id="pair-choice"></select></label
+            ><button id="pair-minus" aria-label="左色減少百分之一">−1%</button
+            ><button id="pair-plus" aria-label="左色增加百分之一">+1%</button>
+          </div>
           <div id="allocations"></div>
           <div id="role-preview" hidden>
             <p id="role-contrast"></p>
