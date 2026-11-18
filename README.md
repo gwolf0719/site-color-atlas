@@ -1,5 +1,7 @@
 # 配色標本室
 
+[![Color Atlas 配色標本室：選好配色，一鍵複製給 AI](docs/images/color-atlas-cover.jpg)](https://gwolf0719.github.io/site-color-atlas/)
+
 打開[配色標本室](https://gwolf0719.github.io/site-color-atlas/)，點選 Three.js 色環上的主色，再從同一批搭配色選背景與輔助色。首頁的「專案色票」直接列出每色的角色、HEX 與面積。點「調整配色」可修改角色和百分比，整段複製給 AI，或用網址分享同一組配色。
 
 ## 入口與維護
