@@ -1,0 +1,297 @@
+body > header {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+.head nav,
+.desk-actions,
+.sheet-head,
+.catalog-options {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.head nav button,
+.desk-actions button,
+.sheet-head button,
+.catalog-options button,
+#back-cards {
+  min-height: 42px;
+  padding: 7px 12px;
+  border: 1px solid currentColor;
+  color: inherit;
+  background: transparent;
+}
+.head #open-library {
+  border-color: transparent;
+}
+.head .reset-desk {
+  border-radius: 30px;
+}
+.desk-actions {
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+.desk-actions button {
+  min-height: 38px;
+  font-size: 0.85rem;
+}
+.desk-actions #quick-copy:enabled {
+  background: var(--print);
+  color: var(--surface);
+  border-color: var(--print);
+}
+.desk-actions button:disabled {
+  color: var(--print);
+  border-style: dashed;
+  cursor: default;
+}
+#desk-feedback {
+  font-size: 0.82rem;
+}
+.desk-sheet {
+  background: var(--paper);
+  color: var(--ink);
+  padding: 0 22px 16px;
+  border: 1px solid var(--ink);
+  width: min(540px, 90vw);
+  max-width: 100%;
+  max-height: min(84svh, 920px);
+  margin: auto auto auto max(4vw, calc((100vw - 1240px) / 2));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  box-shadow: 0 12px 55px #191a202b;
+}
+.desk-sheet::backdrop {
+  background: #17182238;
+}
+.desk-sheet [hidden] {
+  display: none !important;
+}
+.sheet-head {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  justify-content: space-between;
+  background: var(--paper);
+  padding: 15px 0 12px;
+  border-bottom: 1px solid var(--ink);
+}
+.sheet-head h2 {
+  font:
+    700 clamp(1.5rem, 3.4vw, 2.5rem) / 1.2 "Songti TC",
+    "Noto Serif TC",
+    serif;
+}
+.sheet-head button {
+  white-space: nowrap;
+  font-size: 0.85rem;
+}
+.catalog-options {
+  flex-wrap: wrap;
+  padding: 12px 0 5px;
+}
+.catalog-options button {
+  padding-inline: 10px;
+  border-color: var(--rule);
+  font-size: 0.85rem;
+}
+.catalog-options button[aria-pressed="true"] {
+  background: var(--ink);
+  color: var(--paper);
+}
+.desk-sheet section:is(#hunt, #library, #preview, #sources) {
+  padding: 12px 0;
+  border: 0;
+}
+.desk-sheet section h2 {
+  font-family: inherit;
+  font-size: 1.15rem;
+  font-weight: 650;
+}
+.desk-sheet .catalog,
+.desk-sheet .sources {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.desk-sheet .tools,
+.desk-sheet .detail-head,
+.desk-sheet .actions {
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.desk-sheet .detail {
+  padding: 12px;
+}
+.desk-sheet .feature {
+  grid-template-columns: 1fr;
+}
+.desk-sheet .stats {
+  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+}
+.desk-sheet .section-head {
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.desk-sheet .mix-output {
+  width: 100%;
+  padding: 14px 0 0;
+}
+.desk-sheet .mix-output .section-head {
+  border: 0;
+  padding: 0;
+}
+.desk-sheet .allocation {
+  margin: 0;
+}
+.sheet-buttons {
+  display: flex;
+  gap: 6px;
+}
+@media (max-width: 700px) {
+  .head {
+    gap: 4px;
+  }
+  .head nav {
+    gap: 2px;
+  }
+  .head nav button {
+    padding: 6px 8px;
+    font-size: 0.85rem;
+  }
+  .head .brand {
+    font-size: 1rem;
+  }
+  .desk-sheet {
+    margin: auto 0 0;
+    width: 100%;
+    max-width: 100vw;
+    max-height: 83svh;
+    padding-inline: 15px;
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+  }
+  .desk-sheet .tokens {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .desk-sheet[open] {
+    animation: open-sheet 0.22s ease-out both;
+  }
+  @keyframes open-sheet {
+    from {
+      transform: translateY(10px);
+      opacity: 0.35;
+    }
+    to {
+      transform: none;
+      opacity: 1;
+    }
+  }
+}
+.business-proof {
+  margin-block: 12px;
+}
+.business-proof label {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+.business-proof select,
+#chroma-tools button {
+  min-height: 38px;
+  background: var(--paper);
+  color: var(--ink);
+  border: 1px solid var(--rule);
+  padding: 5px 9px;
+}
+#business-sample {
+  display: grid;
+  gap: 6px;
+  margin-top: 10px;
+  background: var(--sample-bg);
+  color: var(--sample-body);
+  border: 1px solid var(--rule);
+  padding: 16px;
+}
+#sample-state {
+  font:
+    12px/1.5 ui-monospace,
+    monospace;
+}
+#sample-title {
+  font:
+    700 clamp(1.4rem, 4vw, 2.2rem) / 1.2 "Songti TC",
+    "Noto Serif TC",
+    serif;
+}
+#sample-detail {
+  font-size: 0.88rem;
+}
+#sample-action {
+  width: fit-content;
+  padding: 6px 12px;
+  background: var(--sample-accent);
+  color: var(--sample-onAccent);
+  border: 1px solid var(--sample-edge);
+}
+#business-sample[data-scene="brand"] #sample-title {
+  width: fit-content;
+  padding: 4px 10px;
+  background: var(--sample-accent);
+  color: var(--sample-onAccent);
+}
+#business-sample[data-scene="brand"] #sample-action {
+  background: transparent;
+  color: var(--sample-body);
+  border: 0;
+  padding: 3px 0;
+  text-decoration: underline;
+}
+#business-sample[data-scene="system"] #sample-detail {
+  border-left: 5px solid var(--sample-accent);
+  padding-left: 7px;
+}
+#chroma-tools {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+#business-note {
+  margin: 8px 0;
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+
+#business-sample[data-scene="brand"] #sample-state::before {
+  content: "";
+  display: inline-block;
+  width: 1em;
+  height: 0.8em;
+  margin-right: 0.5em;
+  background: var(--sample-accent);
+  border: 1px solid var(--sample-edge);
+}
+#proof-strip button,
+#proportion button {
+  appearance: none;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  flex: 0 0 auto;
+  cursor: pointer;
+}
+#proof-strip button:focus-visible,
+#proportion button:focus-visible,
+#proof-strip button:hover,
+#proportion button:hover {
+  outline: 2px solid #171822;
+  outline-offset: -4px;
+  box-shadow: inset 0 0 0 2px #fafafa;
+}
+.allocation .remove-chip {
+  width: 32px;
+  min-height: 32px;
+  padding: 0;
+  border: 1px solid #777780;
+}

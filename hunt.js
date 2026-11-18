@@ -60,7 +60,7 @@ export function setupHunt(apply) {
         color.title = hex;
         strip.append(color);
       }
-      const caption = elt("span", "套用四色 ↗");
+      const caption = elt("span", "套用到轉盤");
       button.append(strip, caption);
       button.onclick = () => apply(arrange(item.colors), item.code);
       const link = elt("a", "原卡 ↗");

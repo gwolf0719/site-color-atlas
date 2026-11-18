@@ -69,7 +69,7 @@ export function safe(hex) {
   if (h >= 54 && h <= 160 && s > 0.6 && l > 0.47 && l < 0.81) return false;
   return true;
 }
-function color(h, s, l) {
+export function color(h, s, l) {
   s /= 100;
   l /= 100;
   const part = (n) => {

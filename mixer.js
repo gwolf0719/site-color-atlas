@@ -1,3 +1,10 @@
+import {
+  brief,
+  contexts,
+  quieterPrimary,
+  renderCommercial,
+} from "./commercial-color.mjs";
+import { setupCatalog } from "./app.js";
 import { drawProof, seamControls } from "./paper-interactions.mjs";
 import {
   roles,
@@ -15,7 +22,7 @@ import {
   candidates,
   appendColor,
   adjust,
-  removeLast,
+  removeColor,
   encode,
   decode,
   format,
@@ -25,6 +32,35 @@ const el = (id) => document.getElementById(id);
 const requested = new URL(location.href).searchParams.get("mix");
 let picks = decode(requested);
 const initial = new URL(location.href).searchParams;
+let businessUse = Object.hasOwn(contexts, initial.get("use"))
+  ? initial.get("use")
+  : "brand";
+let chromaTrial = false;
+el("business-use").value = businessUse;
+function businessProof() {
+  renderCommercial(picks, names, businessUse, chromaTrial);
+}
+el("business-use").onchange = () => {
+  businessUse = el("business-use").value;
+  chromaTrial = false;
+  updateLink();
+  businessProof();
+  copyTicket++;
+  el("mix-feedback").textContent = el("desk-feedback").textContent = "";
+};
+el("try-chroma").onclick = () => {
+  chromaTrial = !chromaTrial;
+  businessProof();
+};
+el("apply-chroma").onclick = () => {
+  const variant = quieterPrimary(picks, names);
+  if (!variant) return;
+  const index = names.indexOf("主色");
+  picks = picks.map((p, i) => (i === index ? { ...p, hex: variant } : p));
+  page = 0;
+  updateLink();
+  render();
+};
 let style = initial.get("style") === "bold" ? "bold" : "calm";
 let names = [...defaults];
 const savedRoles = (initial.get("roles") || "")
@@ -39,7 +75,7 @@ if (
 let source = initial.get("hunt");
 if (!/^[a-f0-9]{24}$/i.test(source || "")) source = null;
 function mixParams(url) {
-  for (const key of ["mix", "style", "roles", "hunt"])
+  for (const key of ["mix", "style", "roles", "hunt", "use"])
     url.searchParams.delete(key);
   if (picks.length) {
     url.searchParams.set("mix", encode(picks));
@@ -52,6 +88,7 @@ function mixParams(url) {
     );
     if (source) url.searchParams.set("hunt", source);
   }
+  if (businessUse !== "brand") url.searchParams.set("use", businessUse);
   if (style === "bold") url.searchParams.set("style", style);
   return url;
 }
@@ -156,11 +193,12 @@ for (const [name, hex] of grays) {
   b.setAttribute("aria-label", name + " " + hex);
   b.onclick = () => {
     if (el("gray-action").value === "background") {
-      setBackground(hex);
+      if (backgroundColor() === hex) removeSelected(hex);
+      else setBackground(hex);
       return;
     }
     if (picks.some((p) => p.hex === hex)) {
-      el("bg-feedback").textContent = "這個灰階已在配置表中。";
+      removeSelected(hex);
       return;
     }
     if (picks.length === LIMIT) {
@@ -245,12 +283,16 @@ function syncRatios() {
     span.title = letter(i) + " " + p.hex + " " + p.percent + "%";
   });
   seams.sync();
+  businessProof();
   endTrial();
   copyTicket++;
   el("mix-feedback").textContent = "比例已調整，合計 100%。";
 }
 function updateLink() {
   const url = new URL(location.href);
+  url.searchParams.delete("palette");
+  url.searchParams.delete("view");
+  url.hash = "";
   mixParams(url);
   history.replaceState(null, "", url);
 }
@@ -272,14 +314,20 @@ function refreshOutput() {
   list.replaceChildren();
   bar.replaceChildren();
   for (const [i, pick] of picks.entries()) {
-    const part = make("span");
+    const part = make("button");
+    part.dataset.removeHex = pick.hex;
+    part.setAttribute("aria-label", "移除 " + names[i] + " " + pick.hex);
     part.style.width = pick.percent + "%";
     part.style.background = pick.hex;
     part.title = letter(i) + " " + pick.hex + " " + pick.percent + "%";
     bar.append(part);
     const row = make("div");
     row.className = "allocation";
-    const dot = make("i");
+    const dot = make("button");
+    dot.dataset.removeHex = pick.hex;
+    dot.className = "remove-chip";
+    dot.setAttribute("aria-label", "移除 " + names[i] + " " + pick.hex);
+    dot.title = "移除 " + pick.hex;
     dot.style.background = pick.hex;
     const label = make("label", letter(i) + " " + names[i]);
     label.htmlFor = "percent-" + i;
@@ -328,12 +376,13 @@ function refreshOutput() {
     row.append(dot, label, role, input, make("span", "%"));
     list.append(row);
   }
-  for (const id of ["undo", "reset", "copy-mix", "share-mix"])
+  for (const id of ["undo", "quick-copy", "copy-mix", "share-mix"])
     el(id).disabled = !picks.length;
   el("mix-empty").hidden = Boolean(picks.length);
   el("find-hunt").hidden = !names.slice(0, picks.length).includes("主色");
 }
 function render() {
+  el("desk-feedback").textContent = "";
   copyTicket++;
   const roleSet = names.slice(0, picks.length);
   const background = picks[roleSet.indexOf("背景")]?.hex;
@@ -346,10 +395,6 @@ function render() {
     ) || "點綴色";
   const primary =
     picks[names.slice(0, picks.length).indexOf("主色")]?.hex || picks[0]?.hex;
-  const directory = mixParams(new URL("library.html", location.href));
-  el("open-library").href = directory.href;
-  directory.hash = "hunt";
-  el("find-hunt").href = directory.href;
   for (const b of el("directions").children)
     b.setAttribute("aria-pressed", String(b.dataset.style === style));
   el("style-tip").textContent =
@@ -431,6 +476,8 @@ function render() {
   seams.build();
   endTrial();
   rolePreview();
+  chromaTrial = false;
+  businessProof();
 }
 function fallbackHit(e) {
   const rect = el("ring-fallback").getBoundingClientRect();
@@ -439,7 +486,9 @@ function fallbackHit(e) {
   const r = Math.hypot(x, y);
   if (r < 0.18 || r > 0.5) return null;
   const turn = (Math.atan2(x, -y) / (2 * Math.PI) + 1) % 1;
-  return options[Math.floor(turn * options.length)];
+  if (options.length) return options[Math.floor(turn * options.length)];
+  let end = 0;
+  return picks.find((p) => turn * 100 < (end += p.percent));
 }
 const fallback = el("ring-fallback");
 let fallbackHold;
@@ -476,7 +525,11 @@ fallback.onpointerup = (e) => {
   if (fallbackHold?.id !== e.pointerId) return;
   const { borrow, candidate } = fallbackHold;
   clearHold();
-  if (!borrow) choose(candidate.hex);
+  if (!borrow) {
+    if (picks.some((p) => p.hex === candidate.hex))
+      removeSelected(candidate.hex);
+    else choose(candidate.hex);
+  }
 };
 fallback.onpointercancel = fallback.onlostpointercapture = clearHold;
 fallback.onpointerleave = () => {
@@ -515,34 +568,106 @@ el("hex-form").onsubmit = (e) => {
   el("brand-color").open = false;
   choose(hex);
 };
-el("undo").onclick = () => {
+function removeSelected(hex) {
+  const i = picks.findIndex((p) => p.hex === hex);
+  if (i < 0) return;
+  picks = removeColor(picks, hex);
+  names.splice(i, 1);
+  names.push("其他");
+  if (!picks.length) {
+    names = [...defaults];
+    source = null;
+  }
   page = 0;
   browseAll = false;
-  picks = removeLast(picks);
-  if (!picks.length) source = null;
   updateLink();
   render();
-};
-el("reset").onclick = () => {
+  const note = "已移除 " + hex + "。";
+  el("desk-feedback").textContent = el("mix-feedback").textContent = note;
+}
+for (const id of ["proof-strip", "allocations", "proportion"]) {
+  el(id).addEventListener("click", (e) => {
+    const swatch = e.target.closest("button[data-remove-hex]");
+    if (!swatch) return;
+    const index = [...el(id).querySelectorAll("[data-remove-hex]")].indexOf(
+      swatch,
+    );
+    removeSelected(swatch.dataset.removeHex);
+    if (e.detail === 0) {
+      const buttons = el(id).querySelectorAll("[data-remove-hex]");
+      (
+        buttons[Math.min(index, buttons.length - 1)] ||
+        (el("recipe-sheet").open ? el("business-use") : el("open-recipe"))
+      ).focus();
+    }
+  });
+}
+el("undo").onclick = () => removeSelected(picks.at(-1)?.hex);
+const catalog = setupCatalog(
+  (colors, code = null) => {
+    el("catalog-sheet").close();
+    picks = colors.reduce(appendColor, []);
+    names = [...defaults];
+    source = code;
+    page = 0;
+    browseAll = false;
+    updateLink();
+    render();
+    window.scrollTo({ top: 0, behavior: "instant" });
+    el("desk-feedback").textContent = "已套用 " + picks.length + " 色。";
+  },
+  () => [picks[names.slice(0, picks.length).indexOf("主色")]?.hex || "", style],
+);
+
+el("open-library").onclick = el("find-hunt").onclick = () => catalog.open();
+el("open-recipe").onclick = () => el("recipe-sheet").showModal();
+for (const button of document.querySelectorAll("[data-close]"))
+  button.onclick = () => button.closest("dialog").close();
+function resetDesk() {
+  for (const dialog of document.querySelectorAll("dialog[open]"))
+    dialog.close();
   picks = [];
   names = [...defaults];
+  style = "calm";
+  businessUse = el("business-use").value = "brand";
   source = null;
   page = 0;
   browseAll = false;
+  for (const id of ["gray-action", "lightness", "saturation"]) {
+    const select = el(id);
+    select.value =
+      [...select.options].find((o) => o.defaultSelected)?.value ??
+      select.options[0].value;
+  }
+  el("precision").open = el("brand-color").open = false;
+  el("hex-form").reset();
+  el("bg-feedback").textContent = "";
+  clearHold();
+  catalog.reset();
+  wheel?.reset();
   updateLink();
   render();
-};
+  window.scrollTo({ top: 0, behavior: "instant" });
+  el("desk-feedback").textContent = "已重設，請選主色。";
+}
+el("reset").onclick = resetDesk;
+for (const button of document.querySelectorAll("[data-reset]"))
+  button.onclick = resetDesk;
 async function copy(text, success) {
   const ticket = ++copyTicket;
   try {
     await navigator.clipboard.writeText(text);
-    if (ticket === copyTicket) el("mix-feedback").textContent = success;
+    if (ticket === copyTicket) {
+      el("mix-feedback").textContent = success;
+      el("desk-feedback").textContent = success;
+    }
   } catch {
     window.prompt("請複製下方內容", text);
   }
 }
-el("copy-mix").onclick = () => {
+el("quick-copy").onclick = el("copy-mix").onclick = () => {
   const lines = [format(picks, names), "配色方向：" + styles[style]];
+  lines.push(...brief(picks, names, businessUse).lines);
   if (source) lines.push("色卡參考：" + huntUrl(source));
   copy(lines.join("\n"), "已複製整段配置表。");
 };
@@ -561,13 +686,41 @@ el("share-mix").onclick = () => {
   copy(url.href, "已複製配色與比例連結。");
 };
 render();
+el("recipe-sheet").addEventListener("close", () => {
+  chromaTrial = false;
+  businessProof();
+});
+const panel = location.hash.slice(1);
+if (["hunt", "library", "preview", "sources"].includes(panel))
+  catalog.open(panel);
+else if (initial.has("palette")) catalog.open("preview");
+else if (panel === "configuration") el("recipe-sheet").showModal();
+for (const dialog of document.querySelectorAll("dialog"))
+  dialog.addEventListener("close", () => {
+    const url = new URL(location.href);
+    if (
+      ["#hunt", "#preview", "#library", "#sources", "#configuration"].includes(
+        url.hash,
+      )
+    )
+      url.hash = "";
+    url.searchParams.delete("palette");
+    url.searchParams.delete("view");
+    history.replaceState(null, "", url);
+  });
 import("./ring.js")
   .then(({ createWheel }) => {
     const fallback = el("ring-fallback");
-    wheel = createWheel(el("wheel-host"), choose, hover, () => {
-      wheel = null;
-      fallback.hidden = false;
-    });
+    wheel = createWheel(
+      el("wheel-host"),
+      choose,
+      hover,
+      () => {
+        wheel = null;
+        fallback.hidden = false;
+      },
+      removeSelected,
+    );
     wheel.update(options, picks, backgroundColor());
     fallback.hidden = true;
   })

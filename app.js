@@ -1,28 +1,4 @@
 import { setupHunt } from "./hunt.js";
-import { appendColor, decode, encode } from "./mixer-data.mjs";
-import { roles, defaults } from "./color-rules.mjs";
-function homeURL() {
-  const u = new URL("./", location.href);
-  for (const key of ["mix", "style", "roles", "hunt"]) {
-    if (params.has(key)) u.searchParams.set(key, params.get(key));
-  }
-  return u;
-}
-function applyPalette(colors, code = null) {
-  const u = homeURL(),
-    picks = colors.reduce(appendColor, []);
-  u.searchParams.set("mix", encode(picks));
-  u.searchParams.set(
-    "roles",
-    defaults
-      .slice(0, picks.length)
-      .map((r) => roles.indexOf(r))
-      .join(""),
-  );
-  if (code) u.searchParams.set("hunt", code);
-  else u.searchParams.delete("hunt");
-  location.assign(u.href);
-}
 const byId = (id) => document.getElementById(id);
 const labels = {
   canvas: "頁面底色",
@@ -72,11 +48,6 @@ function selectionUrl() {
   url.hash = "preview";
   return url;
 }
-function updateUrl() {
-  const url = selectionUrl();
-  url.hash = location.hash;
-  history.replaceState(null, "", url);
-}
 let cardLimit = 16;
 function renderCards() {
   const matches = palettes.filter(
@@ -103,11 +74,10 @@ function renderCards() {
     card.append(bars, foot);
     card.onclick = () => {
       selected = palette;
-      updateUrl();
       renderDetail();
       for (const button of catalog.children) pressed(button, button === card);
+      showPanel("preview");
       byId("preview").focus({ preventScroll: true });
-      byId("preview").scrollIntoView();
     };
     catalog.append(card);
   }
@@ -177,14 +147,7 @@ function renderDetail() {
     "∶1";
   renderDemo();
 }
-async function init() {
-  byId("return-mixer").href = homeURL().href;
-  const current = decode(params.get("mix"));
-  const primaryIndex = (params.get("roles") || "1").indexOf("1");
-  setupHunt(applyPalette)(
-    current[primaryIndex]?.hex || "",
-    params.get("style") === "bold" ? "bold" : "calm",
-  );
+async function loadTeam(applyPalette) {
   const response = await fetch("./palettes.json?v=c49faa2");
   if (!response.ok) throw Error("載入失敗");
   palettes = await response.json();
@@ -212,7 +175,6 @@ async function init() {
   for (const button of byId("views").children)
     button.onclick = () => {
       view = button.dataset.view;
-      updateUrl();
       renderDemo();
       byId("feedback").textContent = "";
     };
@@ -237,20 +199,55 @@ async function init() {
   };
   renderCards();
   renderDetail();
-  if (location.hash === "#preview") byId("preview").scrollIntoView();
 }
-init().catch(() => {
-  byId("catalog").textContent = "色卡載入失敗，請重新整理頁面。";
-});
 
-const chapters = new IntersectionObserver((entries) => {
-  for (const entry of entries)
-    if (entry.isIntersecting) {
-      entry.target.classList.add("arriving");
-      chapters.unobserve(entry.target);
+const sheet = byId("catalog-sheet");
+function showPanel(name) {
+  for (const section of sheet.querySelectorAll("section"))
+    section.hidden = section.id !== name;
+  for (const button of sheet.querySelectorAll("[data-panel]"))
+    pressed(
+      button,
+      button.dataset.panel === (name === "preview" ? "library" : name),
+    );
+  sheet.scrollTop = 0;
+}
+
+export function setupCatalog(applyPalette, context) {
+  let teamRequest, updateHunt;
+  function open(name = "hunt") {
+    if (!sheet.open) sheet.showModal();
+    showPanel(name);
+    if (name === "hunt") {
+      updateHunt ??= setupHunt(applyPalette);
+      updateHunt(...context());
+    } else if (name === "library" || name === "preview") {
+      teamRequest ??= loadTeam(applyPalette).catch(() => {
+        teamRequest = null;
+        showPanel("library");
+        byId("catalog").textContent = "色卡載入失敗，請重新選取團隊色卡。";
+      });
     }
-});
-for (const section of document.querySelectorAll(
-  "#hunt,#library,#sources,#configuration",
-))
-  chapters.observe(section);
+  }
+  function reset() {
+    view = "site";
+    category = "全部";
+    cardLimit = 16;
+    byId("mode").selectedIndex = 0;
+    byId("hunt-order").selectedIndex = 0;
+    if (updateHunt) byId("hunt-order").onchange();
+    params.delete("palette");
+    params.delete("view");
+    if (palettes.length) {
+      selected = palettes[0];
+      for (const b of byId("filter").children)
+        pressed(b, b.textContent === category);
+      renderCards();
+      renderDetail();
+    }
+  }
+  for (const b of sheet.querySelectorAll("[data-panel]"))
+    b.onclick = () => open(b.dataset.panel);
+  byId("back-cards").onclick = () => open("library");
+  return { open, reset };
+}

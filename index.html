@@ -9,30 +9,28 @@
       name="description"
       content="點選立體色環，探索協調或鮮明高反差的配色，將色碼與面積比例整段複製給 AI。"
     />
-    <link rel="stylesheet" href="style.css?v=paper-press-1" />
-    <link rel="stylesheet" href="mixer.css?v=paper-press-1" />
-    <link rel="stylesheet" href="exhibition.css?v=paper-press-1" />
-    <script>
-      if (["#hunt", "#library", "#preview", "#sources"].includes(location.hash))
-        location.replace("./library.html" + location.search + location.hash);
-    </script>
+    <link rel="stylesheet" href="style.css?v=desk-commerce-2" />
+    <link rel="stylesheet" href="mixer.css?v=desk-commerce-2" />
+    <link rel="stylesheet" href="exhibition.css?v=desk-commerce-2" />
+    <link rel="stylesheet" href="desk.css?v=desk-commerce-2" />
     <script type="importmap">
       {
         "imports": {
-          "./paper-interactions.mjs": "./paper-interactions.mjs?v=paper-press-1",
-          "./app.js": "./app.js?v=paper-press-1",
-          "./mixer.js": "./mixer.js?v=paper-press-1",
-          "./mixer-data.mjs": "./mixer-data.mjs?v=paper-press-1",
-          "./spectrum.mjs": "./spectrum.mjs?v=paper-press-1",
-          "./color-rules.mjs": "./color-rules.mjs?v=paper-press-1",
-          "./hunt.js": "./hunt.js?v=paper-press-1",
-          "./ring.js": "./ring.js?v=paper-press-1",
-          "./chromatic-scene.js": "./chromatic-scene.js?v=paper-press-1",
-          "./vendor/three.js": "./vendor/three.js?v=paper-press-1"
+          "./paper-interactions.mjs": "./paper-interactions.mjs?v=desk-commerce-2",
+          "./commercial-color.mjs": "./commercial-color.mjs?v=desk-commerce-2",
+          "./app.js": "./app.js?v=desk-commerce-2",
+          "./mixer.js": "./mixer.js?v=desk-commerce-2",
+          "./mixer-data.mjs": "./mixer-data.mjs?v=desk-commerce-2",
+          "./spectrum.mjs": "./spectrum.mjs?v=desk-commerce-2",
+          "./color-rules.mjs": "./color-rules.mjs?v=desk-commerce-2",
+          "./hunt.js": "./hunt.js?v=desk-commerce-2",
+          "./ring.js": "./ring.js?v=desk-commerce-2",
+          "./chromatic-scene.js": "./chromatic-scene.js?v=desk-commerce-2",
+          "./vendor/three.js": "./vendor/three.js?v=desk-commerce-2"
         }
       }
     </script>
-    <script type="module" src="mixer.js?v=paper-press-1"></script>
+    <script type="module" src="mixer.js?v=desk-commerce-2"></script>
   </head>
   <body>
     <header>
@@ -41,7 +39,10 @@
           ><i class="mark" aria-hidden="true"></i>配色標本室</a
         >
         <nav aria-label="主導覽">
-          <a id="open-library" href="library.html">參考色庫 ↗</a>
+          <button id="open-library" aria-haspopup="dialog">整組色卡</button
+          ><button id="reset" class="reset-desk" aria-label="重設轉盤">
+            ↺ 重設
+          </button>
         </nav>
       </div>
     </header>
@@ -72,8 +73,8 @@
               <p id="style-tip"></p>
               <div id="recommendations" aria-label="推薦配色"></div>
               <div class="mix-browse">
-                <a id="find-hunt" href="library.html#hunt" hidden
-                  >看整組四色 ↘</a
+                <button id="find-hunt" aria-haspopup="dialog" hidden>
+                  看整組四色</button
                 ><button id="more-colors" hidden>下一批推薦</button
                 ><button id="switch-colors" hidden>瀏覽全色環</button>
               </div>
@@ -152,44 +153,277 @@
                 <span id="proof-state" role="status">試色紙</span
                 ><code id="hover-code"></code>
               </div>
-              <div id="proof-strip" aria-hidden="true"></div>
-              <a class="downlink" href="#configuration">調整比例與複製配色 ↓</a>
+              <div
+                id="proof-strip"
+                role="group"
+                aria-label="已選色帶，點選可移除"
+              ></div>
+              <div class="desk-actions">
+                <button id="open-recipe" aria-haspopup="dialog">
+                  商業試色與比例</button
+                ><button id="quick-copy" disabled>複製給 AI</button
+                ><small id="desk-feedback" role="status"></small>
+              </div>
             </div>
           </div>
-        </div>
-        <div class="mix-output" id="configuration">
-          <div class="section-head">
-            <h2>色碼配置表</h2>
-            <div class="mix-tools">
-              <button id="undo" disabled>移除末色</button
-              ><button id="reset" disabled>重新選色</button>
+          <dialog
+            id="recipe-sheet"
+            class="desk-sheet"
+            aria-labelledby="recipe-title"
+          >
+            <div class="sheet-head">
+              <h2 id="recipe-title">商業試色與比例</h2>
+              <div class="sheet-buttons">
+                <button data-reset aria-label="重設轉盤">重設</button
+                ><button data-close>回轉盤</button>
+              </div>
             </div>
-          </div>
-          <div class="ratio-sheet">
-            <div id="proportion" aria-label="顏色面積比例"></div>
-            <div id="seams"></div>
-          </div>
-          <div id="pair-tools" hidden>
-            <label
-              >移動交界
-              <select id="pair-choice"></select></label
-            ><button id="pair-minus" aria-label="左色減少百分之一">−1%</button
-            ><button id="pair-plus" aria-label="左色增加百分之一">+1%</button>
-          </div>
-          <div id="allocations"></div>
-          <div id="role-preview" hidden>
-            <p id="role-contrast"></p>
-          </div>
-          <p id="mix-empty">
-            點選色環加入第一個顏色，這裡會列出色碼與可調整的面積比例。
-          </p>
-          <div class="send-row">
-            <div class="actions">
-              <button id="copy-mix" disabled>複製整段給 AI</button
-              ><button id="share-mix" disabled>複製配色連結</button>
+            <div class="mix-output" id="configuration">
+              <div class="section-head">
+                <div class="mix-tools">
+                  <button id="undo" disabled>移除末色</button>
+                </div>
+              </div>
+              <div class="business-proof">
+                <label for="business-use">網站用途</label>
+                <select id="business-use">
+                  <option value="brand">品牌官網</option>
+                  <option value="shop">商品導購</option>
+                  <option value="system">資訊系統</option>
+                </select>
+                <div
+                  id="business-sample"
+                  aria-label="所選配色的版面示意"
+                  hidden
+                >
+                  <span id="sample-state"></span
+                  ><strong id="sample-title"></strong>
+                  <span id="sample-detail"></span
+                  ><span id="sample-action"></span>
+                </div>
+                <div id="chroma-tools" hidden>
+                  <button id="try-chroma" aria-pressed="false">
+                    試看較低彩度</button
+                  ><button id="apply-chroma" hidden>採用試放主色</button>
+                </div>
+                <p id="business-note"></p>
+              </div>
+              <div class="ratio-sheet">
+                <div id="proportion" aria-label="顏色面積比例"></div>
+                <div id="seams"></div>
+              </div>
+              <div id="pair-tools" hidden>
+                <label
+                  >移動交界
+                  <select id="pair-choice"></select></label
+                ><button id="pair-minus" aria-label="左色減少百分之一">
+                  −1%</button
+                ><button id="pair-plus" aria-label="左色增加百分之一">
+                  +1%
+                </button>
+              </div>
+              <div id="allocations"></div>
+              <div id="role-preview" hidden>
+                <p id="role-contrast"></p>
+              </div>
+              <p id="mix-empty">
+                點選色環加入第一個顏色，這裡會列出色碼與可調整的面積比例。
+              </p>
+              <div class="send-row">
+                <div class="actions">
+                  <button id="copy-mix" disabled>複製整段給 AI</button
+                  ><button id="share-mix" disabled>複製配色連結</button>
+                </div>
+                <span id="mix-feedback" role="status"></span>
+              </div>
             </div>
-            <span id="mix-feedback" role="status"></span>
-          </div>
+          </dialog>
+          <dialog
+            id="catalog-sheet"
+            class="desk-sheet"
+            aria-labelledby="catalog-title"
+          >
+            <div class="sheet-head">
+              <h2 id="catalog-title">整組色卡</h2>
+              <div class="sheet-buttons">
+                <button data-reset aria-label="重設轉盤">重設</button
+                ><button data-close>回轉盤</button>
+              </div>
+            </div>
+            <div class="catalog-options" aria-label="色卡選項" role="group">
+              <button data-panel="hunt">Color Hunt</button>
+              <button data-panel="library">團隊色卡</button>
+              <button data-panel="sources">來源</button>
+            </div>
+            <section id="hunt">
+              <div class="section-head">
+                <h2>Color Hunt 四色庫</h2>
+                <a href="https://colorhunt.co/" target="_blank" rel="noopener"
+                  >查看原站 ↗</a
+                >
+              </div>
+              <p id="hunt-status" role="status">正在讀取公開色卡…</p>
+              <div class="tools">
+                <label
+                  >排列方式
+                  <select id="hunt-order">
+                    <option value="match">依目前選色與方向</option>
+                    <option value="new">最新收錄</option>
+                  </select></label
+                ><a href="colorhunt.json" target="_blank" rel="noopener"
+                  >完整色碼資料</a
+                >
+              </div>
+              <div id="hunt-grid" class="catalog"></div>
+              <div class="hunt-pages">
+                <button id="hunt-prev">上一頁</button
+                ><span id="hunt-page"></span
+                ><button id="hunt-next">下一頁</button>
+              </div>
+            </section>
+            <section id="library">
+              <div class="section-head">
+                <h2>團隊網站色卡</h2>
+                <span id="count"></span>
+              </div>
+              <div class="tools">
+                <div
+                  id="filter"
+                  class="pills"
+                  role="group"
+                  aria-label="依用途篩選"
+                ></div>
+                <label
+                  >明暗
+                  <select id="mode">
+                    <option>全部明暗</option>
+                    <option>淺色</option>
+                    <option>深色</option>
+                  </select></label
+                >
+              </div>
+              <div class="catalog" id="catalog"></div>
+              <button id="more-cards" class="more-cards" hidden>
+                顯示更多色卡
+              </button>
+            </section>
+            <section id="preview" tabindex="-1">
+              <div class="section-head">
+                <h2>試色台</h2>
+                <button id="back-cards">回團隊色卡</button>
+              </div>
+              <div class="detail">
+                <div class="detail-head">
+                  <div>
+                    <p class="meta" id="detail-meta"></p>
+                    <h3 id="name"></h3>
+                    <p id="note"></p>
+                  </div>
+                  <div
+                    class="pills"
+                    id="views"
+                    aria-label="預覽版型"
+                    role="group"
+                  >
+                    <button data-view="site">官網預覽</button
+                    ><button data-view="system">系統預覽</button>
+                  </div>
+                </div>
+                <div id="demo" aria-label="配色套用示意"></div>
+                <h4>色彩角色</h4>
+                <div id="tokens" class="tokens"></div>
+                <p id="contrast" class="fine"></p>
+                <div class="actions">
+                  <button id="use-card">套用到轉盤</button
+                  ><button id="share">複製選色連結</button
+                  ><button id="copy-css">複製 CSS 變數</button
+                  ><span id="feedback" role="status"></span>
+                </div>
+              </div>
+            </section>
+            <section id="sources">
+              <h2>參考來源</h2>
+              <p>
+                Color Hunt
+                四色庫保留原始搭配。團隊網站色卡另行配色，並參考下列工具安排網站元件。
+              </p>
+              <div class="sources">
+                <a
+                  href="https://doi.org/10.1007/s11747-010-0245-y"
+                  target="_blank"
+                  rel="noopener"
+                  ><b>品牌色與彩度研究 ↗</b
+                  ><small
+                    >色相、彩度與明暗如何影響人對品牌個性的判讀。</small
+                  ></a
+                >
+                <a
+                  href="https://doi.org/10.1177/1470593106061263"
+                  target="_blank"
+                  rel="noopener"
+                  ><b>產品與顏色適配研究 ↗</b
+                  ><small>把顏色放回產品和品牌定位，評估是否合適。</small></a
+                >
+
+                <a href="https://colorhunt.co/" target="_blank" rel="noopener"
+                  ><b>Color Hunt ↗</b
+                  ><small
+                    >保留公開色卡的四個色碼及原始排列，每組附原站連結。</small
+                  ></a
+                ><a href="https://paletton.com/" target="_blank" rel="noopener"
+                  ><b>Paletton ↗</b
+                  ><small
+                    >參考同色、鄰近與互補的搭配方式。本工具用 HSL
+                    色相及明度差推薦。</small
+                  ></a
+                >
+                <a
+                  href="https://color.adobe.com/explore"
+                  target="_blank"
+                  rel="noopener"
+                  ><b>Adobe Color ↗</b
+                  ><small>按情緒與風格探索搭配，整理用途分類。</small></a
+                >
+                <a
+                  href="https://www.happyhues.co/palettes/14"
+                  target="_blank"
+                  rel="noopener"
+                  ><b>Happy Hues ↗</b
+                  ><small
+                    >把色票放回標題、內文與按鈕，觀察同一組色的面積差異。</small
+                  ></a
+                >
+                <a
+                  href="https://yeun.github.io/open-color/"
+                  target="_blank"
+                  rel="noopener"
+                  ><b>Open Color ↗</b
+                  ><small>參考同色相的明度梯度，安排頁底與表面。</small></a
+                >
+                <a
+                  href="https://www.radix-ui.com/colors/docs/palette-composition/understanding-the-scale"
+                  target="_blank"
+                  rel="noopener"
+                  ><b>Radix Colors ↗</b
+                  ><small>依元件底色及文字用途安排明度層級。</small></a
+                >
+                <a
+                  href="https://designsystem.digital.gov/design-tokens/color/theme-tokens/"
+                  target="_blank"
+                  rel="noopener"
+                  ><b>USWDS ↗</b
+                  ><small>用角色命名主色與點綴，方便跨專案換色。</small></a
+                >
+                <a
+                  href="https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html"
+                  target="_blank"
+                  rel="noopener"
+                  ><b>W3C WCAG 2.2 ↗</b
+                  ><small>依相對亮度檢查一般文字與背景的對比值。</small></a
+                >
+              </div>
+            </section>
+          </dialog>
         </div>
       </section>
     </main>

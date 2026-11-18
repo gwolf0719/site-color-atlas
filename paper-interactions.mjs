@@ -23,10 +23,16 @@ export function drawProof(picks, hex) {
   el("proof-state").textContent = trial
     ? "試放 " + hex + "　" + sample.at(-1).percent + "%"
     : picks.length
-      ? "已選 " + picks.length + " 色"
+      ? "已選 " + picks.length + " 色 · 點色塊移除"
       : "長按色紙，在這裡試色";
   const parts = sample.map((p) => {
-    const part = document.createElement("i");
+    const selected = picks.some((pick) => pick.hex === p.hex);
+    const part = document.createElement(selected ? "button" : "i");
+    if (selected) {
+      part.dataset.removeHex = p.hex;
+      part.title = "移除 " + p.hex;
+      part.setAttribute("aria-label", part.title);
+    }
     part.style.width = p.percent + "%";
     part.style.backgroundColor = p.hex;
     return part;

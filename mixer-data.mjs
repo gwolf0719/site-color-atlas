@@ -44,11 +44,11 @@ function canAdd(picks, hex) {
   );
 }
 // 最大餘數法保證各色至少 1%，整數總和恆為 100%。
-function distribute(weights, total) {
+function distribute(weights, total, minimum = 1) {
   if (!weights.length) return [];
-  const free = total - weights.length;
+  const free = total - minimum * weights.length;
   const sum = weights.reduce((a, b) => a + b, 0);
-  const shares = weights.map((w) => 1 + (free * w) / sum);
+  const shares = weights.map((w) => minimum + (free * w) / sum);
   const result = shares.map(Math.floor);
   const order = shares
     .map((v, i) => ({ i, rest: v - result[i] }))
@@ -92,13 +92,18 @@ export function adjust(picks, index, percent) {
     percent: i === index ? amount : others.shift(),
   }));
 }
-export function removeLast(picks) {
-  const rest = picks.slice(0, -1);
+export function removeColor(picks, hex) {
+  const rest = picks.filter((p) => p.hex !== hex);
+  if (rest.length === picks.length) return picks;
   const scaled = distribute(
     rest.map((p) => p.percent),
     100,
+    0,
   );
   return rest.map((p, i) => ({ ...p, percent: scaled[i] }));
+}
+export function removeLast(picks) {
+  return removeColor(picks, picks.at(-1)?.hex);
 }
 export function encode(picks) {
   return picks.map((p) => p.hex.slice(1) + "-" + p.percent).join(".");

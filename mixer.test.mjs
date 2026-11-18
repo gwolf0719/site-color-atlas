@@ -150,3 +150,46 @@ test("移動交界只交換相鄰面積，保留來源與總量", () => {
     [65, 30, 5],
   );
 });
+
+import { brief, quieterPrimary } from "./commercial-color.mjs";
+test("不同用途採用正式比例與可讀字色，彩度試放可獨立捨棄", () => {
+  const picks = [
+    { hex: "#4659A8", percent: 35 },
+    { hex: "#434854", percent: 65 },
+  ];
+  const names = ["主色", "背景"],
+    original = encode(picks);
+  const alternative = quieterPrimary(picks, names);
+  assert.ok(alternative && alternative !== picks[0].hex);
+  for (const context of ["brand", "shop", "system", "unknown"]) {
+    const actual = brief(picks, names, context),
+      trial = brief(picks, names, context, alternative);
+    assert.ok(
+      ratio(actual.bg, actual.body) >= 4.5 &&
+        ratio(actual.accent, actual.onAccent) >= 4.5,
+    );
+    assert.ok(ratio(actual.edge, actual.bg) >= 3);
+    assert.equal(trial.accent, alternative);
+    assert.ok(actual.lines.join("").includes("35%"));
+  }
+  assert.equal(encode(picks), original);
+  assert.equal(
+    quieterPrimary([{ hex: "#808080", percent: 100 }], ["主色"]),
+    null,
+  );
+  assert.equal(brief(picks.slice(0, 1), ["主色"], "shop").bg, undefined);
+});
+
+import { removeColor } from "./mixer-data.mjs";
+test("移除任意已選色後保持次序與相對面積，零色及單色可安全處理", () => {
+  const picks = decode("4659A8-70.000000-20.FEFEFE-10");
+  assert.deepEqual(removeColor(picks, "#000000"), [
+    { hex: "#4659A8", percent: 88 },
+    { hex: "#FEFEFE", percent: 12 },
+  ]);
+  const one = removeColor(removeColor(picks, "#4659A8"), "#FEFEFE");
+  assert.deepEqual(one, [{ hex: "#000000", percent: 100 }]);
+  assert.deepEqual(removeColor(one, "#000000"), []);
+  assert.equal(removeColor(picks, "#ababab"), picks);
+  assert.equal(picks.length, 3);
+});

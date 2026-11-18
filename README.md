@@ -1,12 +1,12 @@
 # 配色標本室
 
-打開[配色標本室](https://gwolf0719.github.io/site-color-atlas/)，點選 Three.js 色環上的主色，切換協調或鮮明高反差，再選背景與輔助色。下方配置表可改角色和百分比，整段複製給 AI，或用網址分享同一組配色。
+打開[配色標本室](https://gwolf0719.github.io/site-color-atlas/)，點選 Three.js 色環上的主色，切換協調或鮮明高反差，再選背景與輔助色。在轉盤開啟「商業試色與比例」可改角色和百分比，整段複製給 AI，或用網址分享同一組配色。
 
 ## 入口與維護
 
 - `index.html` 與 `style.css` 提供公開介面、版型與參考來源。
 - `palettes.json` 存放色卡 ID、名稱、用途、明暗、說明與八個色彩角色。團隊確認選色後可從 [JSON](https://gwolf0719.github.io/site-color-atlas/palettes.json) 依 ID 讀取。既有 ID 用於分享連結，請維持穩定。
-- `app.js` 負責篩選、預覽、網址與 CSS 匯出。分享格式為 `?palette=risograph&view=system#preview`。
+- `app.js` 管理盤內色卡面板、篩選、預覽及 CSS 匯出。desk.css 管理盤內操作與面板排版，404.html 轉接舊版色庫網址。分享格式為 `?palette=risograph&view=system#preview`。
 - 本機執行 `python3 -m http.server 8106 --bind 127.0.0.1`，並以瀏覽器開啟。發布來源為 GitHub Pages 的 main 分支根目錄。
 - 執行 `python3 check.py` 及 `node --check app.js`，再以瀏覽器核對篩選、切換、複製與分享。
 
@@ -31,8 +31,12 @@ Color Hunt 公開最新動態在 2026-11-18 依序讀取 108 個非空分頁，�
 
 ## 色紙轉盤與試放
 
-首頁的 Three.js 色紙從鉚釘向外展開，橫拖轉動，輕點選色，長按依正式面積試放，鬆手還原。預選背景也會暫時套用到檯面。精準選單提供單點試放及指定 HEX。九階灰色可設為底色或加入配色。配置表可直接移動相鄰色紙的交界，也可用交界選單、加減按鈕與方向鍵調整。參考色庫、案例與資料來源集中在 [色庫頁](https://gwolf0719.github.io/site-color-atlas/library.html)。
+首頁的 Three.js 色紙從鉚釘向外展開，橫拖轉動，輕點選色，長按依正式面積試放，鬆手還原。預選背景也會暫時套用到檯面。精準選單提供單點試放及指定 HEX。九階灰色可設為底色或加入配色。點已選色帶、轉盤比例環或配置表的色塊即可移除該色；其他色保留角色並按原權重換算為合計 100%。配置表可直接移動相鄰色紙的交界，也可用交界選單、加減按鈕與方向鍵調整。「整組色卡」在同一個轉盤內開啟 Color Hunt、團隊色卡與網站／系統試色。點選套用會立即回到原盤，可直接複製給 AI。右上角「重設」恢復初始轉盤、灰階模式、方向和比例，並清除網址內的選色紀錄。
 
 - 紙張幾何與檯面光影見 `chromatic-scene.js`。手勢、渲染與減少動態設定見 `ring.js`。
 - 手機與桌機編排見 `exhibition.css`。試色條、交界事件與比例轉移見 `paper-interactions.mjs`。
 - 研究先例、產品假設及真人測試方法見[互動研究](docs/interaction-research.md)。
+
+## 商業試色
+
+commercial-color.mjs 依品牌官網、商品導購或資訊系統，計算實際字色、邊界與對比，並支援較低彩度的主色試放。面積由使用者決定。分享網址記住用途，AI 輸出附上正式色碼和元件用法。執行 node --test mixer.test.mjs 核對色域、主要文字配對與試放行為。研究來源與適用界線見[商業配色研究](docs/commercial-color.md)。

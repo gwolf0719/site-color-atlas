@@ -16,7 +16,7 @@ import {
 } from "./vendor/three.js";
 
 const TAU = 2 * Math.PI;
-export function createWheel(host, onChoose, onHover, onLoss) {
+export function createWheel(host, onChoose, onHover, onLoss, onRemove) {
   const renderer = new WebGLRenderer({
     alpha: true,
     antialias: true,
@@ -121,6 +121,7 @@ export function createWheel(host, onChoose, onHover, onLoss) {
         makeMaterial(pick.hex),
       );
       segment.position.z = 0.59;
+      segment.userData.selected = pick.hex;
       ratioBand.add(segment);
       startAngle -= arc;
     }
@@ -269,19 +270,21 @@ export function createWheel(host, onChoose, onHover, onLoss) {
       1 - ((event.clientY - rect.top) / rect.height) * 2,
     );
     ray.setFromCamera(cursor, camera);
-    return (
-      ray.intersectObjects(wedges.children, false)[0]?.object.userData.index ??
-      null
-    );
+    return ray.intersectObjects(
+      [...wedges.children, ...ratioBand.children],
+      false,
+    )[0]?.object.userData;
   }
   orbit.onpointerdown = (e) => {
     if (e.button !== 0 || gesture) return;
-    const index = hit(e);
+    const target = hit(e),
+      index = target?.index ?? null;
     gesture = {
       id: e.pointerId,
       x: e.clientX,
       y: e.clientY,
       spin,
+      selected: target?.selected,
       index,
       drag: false,
       borrow: false,
@@ -332,20 +335,25 @@ export function createWheel(host, onChoose, onHover, onLoss) {
         onHover(null, false);
       }
     } else {
-      active = hit(e);
+      const target = hit(e);
+      active = target?.index ?? null;
       pointerX = cursor.x;
       pointerY = cursor.y;
-      orbit.style.cursor = active === null ? "grab" : "pointer";
-      onHover(options[active] || null, false);
+      orbit.style.cursor = target ? "pointer" : "grab";
+      onHover(
+        target?.selected ? { hex: target.selected } : options[active] || null,
+        false,
+      );
     }
     schedule();
   };
   orbit.onpointerup = (e) => {
     if (!gesture || gesture.id !== e.pointerId) return;
-    const { index, drag, borrow } = gesture;
+    const { index, selected, drag, borrow } = gesture;
     stopGesture();
     active = null;
-    if (!drag && !borrow && index !== null && options[index])
+    if (!drag && !borrow && selected) onRemove(selected);
+    else if (!drag && !borrow && index !== null && options[index])
       onChoose(options[index].hex);
     schedule();
   };
@@ -442,6 +450,16 @@ export function createWheel(host, onChoose, onHover, onLoss) {
   resize();
   return {
     update,
+    reset() {
+      stopGesture();
+      removeFlying();
+      active = null;
+      spin = 0.28;
+      velocity = pointerX = pointerY = 0;
+      previousCount = 0;
+      intro = motion.matches ? 1 : 0;
+      schedule();
+    },
     setBackdrop(hex) {
       backdrop.setColor(hex);
       schedule();
