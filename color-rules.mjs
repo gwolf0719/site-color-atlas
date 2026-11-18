@@ -11,7 +11,6 @@ export const defaults = [
   "其他",
   "其他",
 ];
-export const styles = { calm: "協調", bold: "鮮明高反差" };
 export const hueGap = (a, b) => Math.abs(((a - b + 540) % 360) - 180);
 export function ink(bg) {
   return ratio(bg, "#030305") > ratio(bg, "#FEFEFE") ? "#030305" : "#FEFEFE";

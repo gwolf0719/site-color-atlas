@@ -12,18 +12,12 @@ import {
 } from "./commercial-color.mjs";
 import { setupCatalog } from "./app.js";
 import { drawProof, seamControls } from "./paper-interactions.mjs";
-import {
-  roles,
-  defaults,
-  styles,
-  cssRoles,
-  ink,
-  ratio,
-} from "./color-rules.mjs";
+import { roles, defaults, cssRoles, ink, ratio } from "./color-rules.mjs";
 import { huntUrl } from "./hunt.js";
 import { layer, safe } from "./spectrum.mjs";
 import {
   LIMIT,
+  families,
   letter,
   candidates,
   appendColor,
@@ -42,7 +36,9 @@ let businessUse = Object.hasOwn(contexts, initial.get("use"))
   ? initial.get("use")
   : initial.get("view") === "system"
     ? "system"
-    : "brand";
+    : requested
+      ? "brand"
+      : "general";
 let chromaTrial = false;
 el("business-use").value = businessUse;
 function businessProof() {
@@ -79,7 +75,11 @@ el("apply-chroma").onclick = () => {
   updateLink();
   render();
 };
-let style = initial.get("style") === "bold" ? "bold" : "calm";
+if (initial.has("style")) {
+  const url = new URL(location.href);
+  url.searchParams.delete("style");
+  history.replaceState(null, "", url);
+}
 let names = [...defaults];
 const savedRoles = (initial.get("roles") || "")
   .split("")
@@ -106,8 +106,8 @@ function mixParams(url) {
     );
     if (source) url.searchParams.set("hunt", source);
   }
-  if (businessUse !== "brand") url.searchParams.set("use", businessUse);
-  if (style === "bold") url.searchParams.set("style", style);
+  if (picks.length || businessUse !== "general")
+    url.searchParams.set("use", businessUse);
   return url;
 }
 function rolePreview() {
@@ -148,7 +148,7 @@ function backgroundColor() {
 function setBackground(hex) {
   if (!safe(hex)) {
     el("bg-feedback").textContent = "這個色碼在團隊排除範圍，請換一個色碼。";
-    el("custom-bg").value = backgroundColor() || "#D9DCE5";
+    el("custom-bg").value = backgroundColor() || "#ECECEE";
     return;
   }
   const next = backgroundSample(picks, names, hex);
@@ -171,7 +171,7 @@ function updateBackground(hex) {
     stage.style.setProperty("--canvas-ink", ink(hex));
     el("custom-bg").value = hex;
   }
-  if (!hex) el("custom-bg").value = "#D9DCE5";
+  if (!hex) el("custom-bg").value = "#ECECEE";
   el("current-bg").textContent = hex ? "底色 " + hex : "底色未指定";
   for (const b of el("gray-swatches").children) {
     const selected =
@@ -262,7 +262,7 @@ function trialProof(hex, action = "add", group) {
       caption =
         "試放" + sampleRoles[i] + " " + hex + " · " + sample[i].percent + "%";
   }
-  drawProof(picks, sample, caption);
+  drawProof(picks, sample, caption, sampleRoles);
   const stage = el("wheel-host").parentElement;
   const bg = sample[sampleRoles.indexOf("背景")]?.hex;
   const tryBg = !!bg && bg !== backgroundColor();
@@ -438,7 +438,7 @@ function refreshOutput() {
   for (const id of ["undo", "quick-copy", "copy-mix", "share-mix"])
     el(id).disabled = !picks.length;
   el("mix-empty").hidden = Boolean(picks.length);
-  el("find-hunt").hidden = !names.slice(0, picks.length).includes("主色");
+  el("open-recipe").disabled = !picks.length;
 }
 function render() {
   el("desk-feedback").textContent = "";
@@ -451,12 +451,6 @@ function render() {
   const upcoming = nextRole(picks, names);
   const primary =
     picks[names.slice(0, picks.length).indexOf("主色")]?.hex || picks[0]?.hex;
-  for (const b of el("directions").children)
-    b.setAttribute("aria-pressed", String(b.dataset.style === style));
-  el("style-tip").textContent =
-    style === "calm"
-      ? "同色與鄰近色延續視覺，利用明暗分出層次。"
-      : "以對照色拉開色相與明度，強調主要操作與重點。";
   const pool = full
     ? []
     : whole
@@ -464,29 +458,49 @@ function render() {
           Number(el("lightness").value),
           Number(el("saturation").value),
         ).filter((c) => !picks.some((p) => p.hex === c.hex))
-      : candidates(picks, style, primary);
+      : candidates(picks, primary);
+  if (!whole && !full && upcoming === "背景") {
+    const neutrals = grays.filter(
+      ([, hex]) => !picks.some((p) => p.hex === hex),
+    );
+    // 每批保留色相變化，第一批另提供能直接當頁底的淺、深中性色。
+    const edges = [neutrals.at(-1), neutrals[1] || neutrals[0]].filter(Boolean);
+    pool.unshift(...edges.map(([name, hex]) => ({ name, hex })));
+    pool.length = Math.min(pool.length, 72);
+  }
   const size = 12,
     pages = Math.ceil(pool.length / size);
   page = pages ? page % pages : 0;
   options = whole ? pool : pool.slice(page * size, (page + 1) * size);
   el("tones").hidden = !whole || full;
   el("more-colors").hidden = whole || full;
-  el("more-colors").textContent =
-    "下一批推薦（" + (page + 1) + "／" + pages + "）";
+  el("more-colors").textContent = "換一組 " + (page + 1) + " / " + pages;
   el("switch-colors").hidden = !roleSet.includes("主色") || full;
   el("switch-colors").textContent = whole ? "回推薦配色" : "瀏覽全色環";
   el("brand-color").hidden = full;
   el("hex-feedback").textContent = "";
   hover(null);
+  const ready = full || upcoming === "其他";
+  el("pick-verb").textContent = ready ? "配色" : "選";
+  el("hub-role").textContent = ready
+    ? "就緒"
+    : upcoming === "背景"
+      ? "底色"
+      : upcoming;
   el("instruction").textContent = full
-    ? "八色已齊。移動色紙交界，調整最後的比例。"
-    : "滑鼠移入或長按試色，點選加入" + upcoming + "。橫拖可轉動色盤。";
-  el("hub-role").textContent = full
-    ? "配置完成"
-    : picks.length
-      ? upcoming
-      : "選取主色";
-  el("hub-letter").textContent = full ? "8" : letter(picks.length);
+    ? "已選八色，可以複製給 AI。"
+    : ready
+      ? "可直接複製給 AI，或再加一個點綴色。"
+      : !roleSet.includes("主色")
+        ? "點選色環或輸入色碼，開始專案配色。"
+        : "滑過預覽，點一下加入。";
+  el("wheel-kind").textContent = full
+    ? "已選配色"
+    : whole
+      ? "色環"
+      : "推薦搭配";
+  el("wheel-kind").textContent +=
+    "  /  " + (full ? picks.length : options.length) + " 色";
   el("choice-label").textContent = whole ? "色環選項" : "推薦配色";
   el("recommendations").replaceChildren();
   el("color-choice").replaceChildren();
@@ -494,25 +508,30 @@ function render() {
     const opt = make("option", choice.name + " " + choice.hex);
     opt.value = choice.hex;
     el("color-choice").append(opt);
-    if (!whole) {
-      const button = make("button");
-      button.className = "rec";
-      button.setAttribute(
-        "aria-label",
-        "加入" + choice.name + " " + choice.hex,
-      );
-      const chip = make("i");
-      chip.style.background = choice.hex;
-      button.append(chip, make("span", choice.name));
-      button.title = choice.hex;
-      bindPreview(
-        button,
-        () => hover(choice, true),
-        () => hover(null),
-      );
-      button.onclick = () => choose(choice.hex);
-      el("recommendations").append(button);
-    }
+  }
+  const swatches =
+    whole && !roleSet.includes("主色")
+      ? [0, 1, 3, 6, 7, 9, 10, 12]
+          .map((i) => ({ name: families[i].name, hex: families[i].colors[0] }))
+          .filter((c) => !picks.some((p) => p.hex === c.hex))
+      : whole
+        ? options.filter((_, i) => i % Math.ceil(options.length / 8) === 0)
+        : options;
+  for (const choice of swatches) {
+    const button = make("button");
+    button.className = "rec";
+    button.setAttribute("aria-label", "加入" + choice.name + " " + choice.hex);
+    const chip = make("i");
+    chip.style.background = choice.hex;
+    button.append(chip, make("span", choice.name));
+    button.title = choice.hex;
+    bindPreview(
+      button,
+      () => hover(choice, true),
+      () => hover(null),
+    );
+    button.onclick = () => choose(choice.hex);
+    el("recommendations").append(button);
   }
   el("color-choice").disabled = full;
   el("add-color").disabled = full;
@@ -627,7 +646,7 @@ el("hex-form").onsubmit = (e) => {
     return;
   }
   el("custom-hex").value = "";
-  el("brand-color").open = false;
+
   choose(hex);
 };
 function removeSelected(hex) {
@@ -647,7 +666,12 @@ function removeSelected(hex) {
   const note = "已移除 " + hex + "。";
   el("desk-feedback").textContent = el("mix-feedback").textContent = note;
 }
-for (const id of ["proof-strip", "allocations", "proportion"]) {
+for (const id of [
+  "proof-strip",
+  "palette-values",
+  "allocations",
+  "proportion",
+]) {
   el(id).addEventListener("click", (e) => {
     const swatch = e.target.closest("button[data-remove-hex]");
     if (!swatch) return;
@@ -678,14 +702,14 @@ const catalog = setupCatalog(
     window.scrollTo({ top: 0, behavior: "instant" });
     el("desk-feedback").textContent = "已套用 " + picks.length + " 色。";
   },
-  () => [picks[names.slice(0, picks.length).indexOf("主色")]?.hex || "", style],
+  () => picks[names.slice(0, picks.length).indexOf("主色")]?.hex || "",
   (colors) => {
     trial = null;
     trialProof(null, "add", colors);
   },
 );
 
-el("open-library").onclick = el("find-hunt").onclick = () => catalog.open();
+el("open-library").onclick = () => catalog.open();
 el("open-recipe").onclick = () => {
   endTrial();
   el("recipe-sheet").showModal();
@@ -697,8 +721,7 @@ function resetDesk() {
     dialog.close();
   picks = [];
   names = [...defaults];
-  style = "calm";
-  businessUse = el("business-use").value = "brand";
+  businessUse = el("business-use").value = "general";
   source = null;
   page = 0;
   browseAll = false;
@@ -708,7 +731,10 @@ function resetDesk() {
       [...select.options].find((o) => o.defaultSelected)?.value ??
       select.options[0].value;
   }
-  el("precision").open = el("brand-color").open = false;
+  el("advanced-output").open =
+    el("precision").open =
+    el("background-options").open =
+      false;
   el("hex-form").reset();
   el("bg-feedback").textContent = "";
   clearHold();
@@ -735,18 +761,13 @@ async function copy(text, success) {
   }
 }
 el("quick-copy").onclick = el("copy-mix").onclick = () => {
-  const lines = [format(picks, names), "配色方向：" + styles[style]];
-  lines.push(...brief(picks, names, businessUse).lines);
+  const lines = [
+    format(picks, names),
+    ...brief(picks, names, businessUse).lines,
+  ];
   if (source) lines.push("色卡參考：" + huntUrl(source));
   copy(lines.join("\n"), "已複製整段配置表。");
 };
-for (const button of el("directions").children)
-  button.onclick = () => {
-    style = button.dataset.style;
-    page = 0;
-    updateLink();
-    render();
-  };
 el("share-mix").onclick = () => {
   const url = new URL(location.href);
   url.search = "";

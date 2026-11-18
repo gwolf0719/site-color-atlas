@@ -3,46 +3,47 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <meta name="theme-color" content="#D9DCE5" />
-    <title>配色標本室｜色紙轉盤</title>
+    <meta name="theme-color" content="#ECECEE" />
+    <title>配色標本室｜專案配色</title>
     <meta
       name="description"
-      content="點選立體色環，探索協調或鮮明高反差的配色，將色碼與面積比例整段複製給 AI。"
+      content="點選立體色環，依主色探索搭配色，將色碼與面積比例整段複製給 AI。"
     />
-    <link rel="stylesheet" href="style.css?v=live-desk-2" />
-    <link rel="stylesheet" href="mixer.css?v=live-desk-2" />
-    <link rel="stylesheet" href="exhibition.css?v=live-desk-2" />
-    <link rel="stylesheet" href="desk.css?v=live-desk-2" />
+    <link rel="stylesheet" href="style.css?v=atlas-studio-2" />
+    <link rel="stylesheet" href="mixer.css?v=atlas-studio-2" />
+    <link rel="stylesheet" href="exhibition.css?v=atlas-studio-2" />
+    <link rel="stylesheet" href="desk.css?v=atlas-studio-2" />
     <script type="importmap">
       {
         "imports": {
-          "./paper-interactions.mjs": "./paper-interactions.mjs?v=live-desk-2",
-          "./live-proof.mjs": "./live-proof.mjs?v=live-desk-2",
-          "./commercial-color.mjs": "./commercial-color.mjs?v=live-desk-2",
-          "./app.js": "./app.js?v=live-desk-2",
-          "./mixer.js": "./mixer.js?v=live-desk-2",
-          "./mixer-data.mjs": "./mixer-data.mjs?v=live-desk-2",
-          "./spectrum.mjs": "./spectrum.mjs?v=live-desk-2",
-          "./color-rules.mjs": "./color-rules.mjs?v=live-desk-2",
-          "./hunt.js": "./hunt.js?v=live-desk-2",
-          "./ring.js": "./ring.js?v=live-desk-2",
-          "./chromatic-scene.js": "./chromatic-scene.js?v=live-desk-2",
-          "./vendor/three.js": "./vendor/three.js?v=live-desk-2"
+          "./paper-interactions.mjs": "./paper-interactions.mjs?v=atlas-studio-2",
+          "./live-proof.mjs": "./live-proof.mjs?v=atlas-studio-2",
+          "./commercial-color.mjs": "./commercial-color.mjs?v=atlas-studio-2",
+          "./app.js": "./app.js?v=atlas-studio-2",
+          "./mixer.js": "./mixer.js?v=atlas-studio-2",
+          "./mixer-data.mjs": "./mixer-data.mjs?v=atlas-studio-2",
+          "./spectrum.mjs": "./spectrum.mjs?v=atlas-studio-2",
+          "./color-rules.mjs": "./color-rules.mjs?v=atlas-studio-2",
+          "./hunt.js": "./hunt.js?v=atlas-studio-2",
+          "./ring.js": "./ring.js?v=atlas-studio-2",
+          "./chromatic-scene.js": "./chromatic-scene.js?v=atlas-studio-2",
+          "./vendor/three.js": "./vendor/three.js?v=atlas-studio-2"
         }
       }
     </script>
-    <script type="module" src="mixer.js?v=live-desk-2"></script>
+    <script type="module" src="mixer.js?v=atlas-studio-2"></script>
   </head>
   <body>
     <header>
       <div class="wrap head">
         <a class="brand" href="./"
-          ><i class="mark" aria-hidden="true"></i>配色標本室</a
+          ><i class="mark" aria-hidden="true"></i
+          ><span lang="en">Color Atlas</span><small>配色標本室</small></a
         >
         <nav aria-label="主導覽">
           <button id="open-library" aria-haspopup="dialog">整組色卡</button
           ><button id="reset" class="reset-desk" aria-label="重設轉盤">
-            ↺ 重設
+            重設
           </button>
         </nav>
       </div>
@@ -53,36 +54,19 @@
           <div id="wheel-host" aria-hidden="true"></div>
           <div class="stage-copy">
             <div class="stage-intro">
-              <div class="specimen-caption">
-                <span id="hub-letter">A</span><span id="hub-role">主色</span>
-              </div>
-              <div class="intro-frame">
-                <h1 id="mix-title">抽一張<br /><em>色紙。</em></h1>
-                <p id="instruction"></p>
-              </div>
+              <h1 id="mix-title">
+                <span id="pick-verb">選</span><em id="hub-role">主色</em>
+              </h1>
+              <p id="instruction"></p>
             </div>
             <div class="choice-area">
-              <div
-                id="directions"
-                class="directions"
-                role="group"
-                aria-label="配色方向"
-              >
-                <button data-style="calm" aria-pressed="true">協調</button
-                ><button data-style="bold" aria-pressed="false">
-                  鮮明高反差
-                </button>
-              </div>
-              <p id="style-tip"></p>
               <div id="recommendations" aria-label="推薦配色"></div>
               <div class="mix-browse">
-                <button id="find-hunt" aria-haspopup="dialog" hidden>
-                  看整組四色</button
-                ><button id="more-colors" hidden>下一批推薦</button
+                <button id="more-colors" hidden>下一批推薦</button
                 ><button id="switch-colors" hidden>瀏覽全色環</button>
               </div>
               <details id="precision">
-                <summary>依色階或色碼挑選</summary>
+                <summary>進階選色</summary>
                 <div class="precision-inside">
                   <div id="tones" class="tone-controls">
                     <label
@@ -111,59 +95,65 @@
                     ><button id="compare" aria-pressed="false">試放此色</button
                     ><button id="add-color">加入配色</button>
                   </div>
-                  <details id="brand-color">
-                    <summary>輸入指定 HEX 色碼</summary>
-                    <form id="hex-form">
-                      <label for="custom-hex">HEX 色碼</label
-                      ><input
-                        id="custom-hex"
-                        placeholder="#4659A8"
-                        maxlength="7"
-                        autocomplete="off"
-                        spellcheck="false"
-                      /><button>加入此色</button>
-                    </form>
-                    <small id="hex-feedback" role="status"></small>
-                  </details>
+                </div>
+              </details>
+              <div id="brand-color">
+                <form id="hex-form">
+                  <label for="custom-hex">指定色碼</label
+                  ><input
+                    id="custom-hex"
+                    placeholder="#4659A8"
+                    maxlength="7"
+                    autocomplete="off"
+                    spellcheck="false"
+                  /><button>加入</button>
+                </form>
+                <small id="hex-feedback" role="status"></small>
+              </div>
+              <details id="background-options">
+                <summary>底色與灰階</summary>
+                <div class="background-settings">
+                  <div class="background-line">
+                    <label for="gray-action">灰階</label
+                    ><select id="gray-action">
+                      <option value="background">設為底色</option>
+                      <option value="palette">加入配色</option></select
+                    ><output id="current-bg">底色未指定</output>
+                  </div>
+                  <div
+                    id="gray-swatches"
+                    role="group"
+                    aria-label="黑白灰色階"
+                  ></div>
+                  <label class="custom-background"
+                    >自訂底色
+                    <input id="custom-bg" type="color" value="#ECECEE"
+                  /></label>
+                  <span id="bg-feedback" role="status"></span>
                 </div>
               </details>
             </div>
           </div>
           <div class="orbit" id="orbit">
+            <div class="wheel-caption">
+              <span id="wheel-kind">全色環</span><code id="hover-code"></code>
+            </div>
             <div id="ring-fallback" aria-hidden="true"></div>
           </div>
           <div class="stage-foot">
-            <div class="background-settings">
-              <div class="background-line">
-                <label for="gray-action">灰階</label
-                ><select id="gray-action">
-                  <option value="background">設為底色</option>
-                  <option value="palette">加入配色</option></select
-                ><output id="current-bg">底色未指定</output>
-              </div>
-              <div
-                id="gray-swatches"
-                role="group"
-                aria-label="黑白灰色階"
-              ></div>
-              <label class="custom-background"
-                >自訂底色 <input id="custom-bg" type="color" value="#D9DCE5"
-              /></label>
-              <span id="bg-feedback" role="status"></span>
-            </div>
             <div class="sample-proof">
               <div class="proof-head">
-                <span id="proof-state" role="status">試色紙</span
-                ><code id="hover-code"></code>
+                <h2>專案色票</h2>
+                <span id="proof-state" role="status"></span>
               </div>
               <div
                 id="proof-strip"
                 role="group"
                 aria-label="已選色帶，點選可移除"
               ></div>
+              <div id="palette-values" aria-label="專案色碼及面積"></div>
               <div class="desk-actions">
-                <button id="open-recipe" aria-haspopup="dialog">
-                  用途與比例</button
+                <button id="open-recipe" aria-haspopup="dialog">調整配色</button
                 ><button id="quick-copy" disabled>複製給 AI</button
                 ><small id="desk-feedback" role="status"></small>
               </div>
@@ -175,7 +165,7 @@
             aria-labelledby="recipe-title"
           >
             <div class="sheet-head">
-              <h2 id="recipe-title">用途與比例</h2>
+              <h2 id="recipe-title">調整配色</h2>
               <div class="sheet-buttons">
                 <button data-reset aria-label="重設轉盤">重設</button
                 ><button data-close>回轉盤</button>
@@ -187,38 +177,42 @@
                   <button id="undo" disabled>移除末色</button>
                 </div>
               </div>
-              <div class="business-proof">
-                <label for="business-use">網站用途</label>
-                <select id="business-use">
-                  <option value="brand">品牌官網</option>
-                  <option value="shop">商品導購</option>
-                  <option value="system">資訊系統</option>
-                </select>
-                <div id="chroma-tools" hidden>
-                  <button id="try-chroma" aria-pressed="false">
-                    試看較低彩度</button
-                  ><button id="apply-chroma" hidden>採用試放主色</button>
-                </div>
-                <p id="business-note"></p>
-              </div>
               <div class="ratio-sheet">
                 <div id="proportion" aria-label="顏色面積比例"></div>
                 <div id="seams"></div>
-              </div>
-              <div id="pair-tools" hidden>
-                <label
-                  >移動交界
-                  <select id="pair-choice"></select></label
-                ><button id="pair-minus" aria-label="左色減少百分之一">
-                  −1%</button
-                ><button id="pair-plus" aria-label="左色增加百分之一">
-                  +1%
-                </button>
               </div>
               <div id="allocations"></div>
               <div id="role-preview" hidden>
                 <p id="role-contrast"></p>
               </div>
+              <details id="advanced-output">
+                <summary>用途與細部設定</summary>
+                <div class="business-proof">
+                  <label for="business-use">網站用途</label>
+                  <select id="business-use">
+                    <option value="general">通用</option>
+                    <option value="brand">品牌官網</option>
+                    <option value="shop">商品導購</option>
+                    <option value="system">資訊系統</option>
+                  </select>
+                  <div id="chroma-tools" hidden>
+                    <button id="try-chroma" aria-pressed="false">
+                      試看較低彩度</button
+                    ><button id="apply-chroma" hidden>採用試放主色</button>
+                  </div>
+                  <p id="business-note"></p>
+                </div>
+                <div id="pair-tools" hidden>
+                  <label
+                    >移動交界
+                    <select id="pair-choice"></select></label
+                  ><button id="pair-minus" aria-label="左色減少百分之一">
+                    −1%</button
+                  ><button id="pair-plus" aria-label="左色增加百分之一">
+                    +1%
+                  </button>
+                </div>
+              </details>
               <p id="mix-empty">
                 點選色環加入第一個顏色，這裡會列出色碼與可調整的面積比例。
               </p>
@@ -260,7 +254,7 @@
                 <label
                   >排列方式
                   <select id="hunt-order">
-                    <option value="match">依目前選色與方向</option>
+                    <option value="match">依目前主色</option>
                     <option value="new">最新收錄</option>
                   </select></label
                 ><a href="colorhunt.json" target="_blank" rel="noopener"

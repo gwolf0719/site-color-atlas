@@ -101,31 +101,24 @@ export function layer(l, s) {
   return spectrum.filter((c) => c.l === l && c.s === s);
 }
 const hueDifference = (a, b) => Math.abs(((a - b + 540) % 360) - 180);
-export function harmonies(picks, mode = "calm", primary = picks[0].hex) {
+export function harmonies(picks, primary = picks[0].hex) {
   const [baseHue, , baseLight] = hsl(primary),
     [lastHue] = hsl(picks.at(-1).hex);
   const taken = new Set(picks.map((p) => p.hex));
-  const bold = mode === "bold";
-  const offsets = bold
-    ? [180, 150, 210, 120, -120, 165, 195, 135, -135, 170, 190, 160]
-    : [0, 12, -12, 24, -24, 7, -7, 32, -32, 18, -18, 4];
+  const offsets = [0, 12, 180, -12, 24, 150, -24, 7, 210, 32, -32, 4];
   const anchors = offsets.map((offset, i) => [
-    (i === 11 && !bold && hueDifference(lastHue, baseHue) < 25
-      ? lastHue
-      : baseHue) + offset,
-    bold
-      ? offset === 180
-        ? "互補"
-        : "對照"
-      : Math.abs(offset) < 10
-        ? "同色調"
-        : "鄰近色",
+    (i === 11 && hueDifference(lastHue, baseHue) < 25 ? lastHue : baseHue) +
+      offset,
+    offset === 180
+      ? "互補"
+      : offset >= 150
+        ? "分裂互補"
+        : Math.abs(offset) < 10
+          ? "同色調"
+          : "鄰近色",
   ]);
   const targetLs =
     baseLight > 0.5 ? [18, 29, 40, 50, 62, 74] : [74, 62, 50, 40, 29, 18];
-  const pool = bold
-    ? spectrum.filter((c) => ratio(c.hex, primary) >= 3)
-    : spectrum;
   const list = [];
   for (const [k, l] of targetLs.entries()) {
     for (const [i, [angle, relation]] of anchors.entries()) {
@@ -133,12 +126,9 @@ export function harmonies(picks, mode = "calm", primary = picks[0].hex) {
         s = saturation[(i + k) % saturation.length];
       let best = null,
         score = Infinity;
-      for (const c of pool) {
+      for (const c of spectrum) {
         if (taken.has(c.hex)) continue;
-        const lightGap = Math.abs(c.l / 100 - baseLight);
-        const contrastPenalty = bold ? Math.max(0, 0.32 - lightGap) * 180 : 0;
         const diff =
-          contrastPenalty +
           hueDifference(c.h, hue) +
           Math.abs(c.l - l) * 1.6 +
           Math.abs(c.s - s) * 0.3;

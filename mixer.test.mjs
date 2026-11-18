@@ -88,7 +88,7 @@ test("全色階可選，推薦六批不重複，自訂與舊連結能還原", ()
 
 import { readFileSync } from "node:fs";
 import { ratio } from "./spectrum.mjs";
-import { arrange, defaults } from "./color-rules.mjs";
+import { arrange } from "./color-rules.mjs";
 test("Color Hunt 快照完整、可套用的原卡與角色可往返", () => {
   const src = JSON.parse(
     readFileSync(new URL("./colorhunt.json", import.meta.url)),
@@ -106,26 +106,16 @@ test("Color Hunt 快照完整、可套用的原卡與角色可往返", () => {
     assert.deepEqual(decode(encode(picks)), picks);
   }
 });
-test("協調與高反差產生不同推薦，後者符合主色對比門檻", () => {
-  for (const hex of ["#933939", "#9BAED4", "#131319", "#AD254A", "#777777"]) {
-    const p = appendColor([], hex),
-      a = candidates(p, "calm"),
-      b = candidates(p, "bold");
-    assert.equal(a.length, 72);
-    assert.equal(b.length, 72);
-    assert.notDeepEqual(a, b);
-    assert.ok(b.every((c) => ratio(hex, c.hex) >= 3));
+test("選主色後直接在同一批推薦鄰近色與互補色，排除已選色", () => {
+  for (const hex of ["#933939", "#777777", "#131319"]) {
+    const chosen = appendColor(appendColor([], "#FEFEFE"), hex);
+    const list = candidates(chosen, hex);
+    assert.equal(list.length, 72);
+    assert.ok(list.every((c) => !chosen.some((p) => p.hex === c.hex)));
+    const first = list.slice(0, 12);
+    assert.ok(first.some((c) => c.name.startsWith("鄰近色")));
+    assert.ok(first.some((c) => c.name.startsWith("互補")));
   }
-  assert.deepEqual(defaults.slice(0, 4), ["主色", "背景", "輔助色", "其他"]);
-});
-
-test("高反差候選未滿一整批時可正常呈現", () => {
-  const result = candidates(
-    decode("CB2957-20.EEEEEE-16.000000-9.DDDDDD-55"),
-    "bold",
-  );
-  assert.ok(result.length > 0 && result.length < 72);
-  assert.ok(result.every((c) => ratio(c.hex, "#CB2957") >= 3));
 });
 
 import { transfer } from "./paper-interactions.mjs";

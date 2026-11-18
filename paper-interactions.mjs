@@ -17,12 +17,12 @@ export function transfer(picks, index, delta) {
 
 const el = (id) => document.getElementById(id);
 
-export function drawProof(picks, sample = picks, caption = "") {
+export function drawProof(picks, sample = picks, caption = "", roles = []) {
   el("proof-state").textContent =
     caption ||
     (picks.length
-      ? "已選 " + picks.length + " 色 · 點色塊移除"
-      : "移入色紙試色，點選加入");
+      ? picks.length + " 色 · 點選可移除"
+      : "選色後會顯示色碼與比例");
   const parts = sample.map((p) => {
     const selected = picks.some((pick) => pick.hex === p.hex);
     const part = document.createElement(selected ? "button" : "i");
@@ -36,6 +36,28 @@ export function drawProof(picks, sample = picks, caption = "") {
     return part;
   });
   el("proof-strip").replaceChildren(...parts);
+  // 已選色碼保持在原位，滑過試色時只更新上方比例帶。
+  if (sample !== picks) return;
+  const values = el("palette-values");
+  const key = picks
+    .map((p, i) => [roles[i], p.hex, p.percent].join("/"))
+    .join("|");
+  if (values.dataset.key === key) return;
+  values.dataset.key = key;
+  values.replaceChildren(
+    ...picks.map((p, i) => {
+      const chip = document.createElement("button");
+      chip.dataset.removeHex = p.hex;
+      chip.setAttribute("aria-label", "移除" + roles[i] + " " + p.hex);
+      chip.title = "移除" + roles[i] + " " + p.hex;
+      const dot = document.createElement("i");
+      dot.style.backgroundColor = p.hex;
+      const code = document.createElement("code");
+      code.textContent = p.hex;
+      chip.append(dot, roles[i] + " ", code, " " + p.percent + "%");
+      return chip;
+    }),
+  );
 }
 
 export function seamControls(getPicks, preview, commit) {

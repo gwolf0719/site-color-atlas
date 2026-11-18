@@ -1,6 +1,6 @@
 import { bindPreview } from "./live-proof.mjs";
 import { hsl, safe } from "./spectrum.mjs";
-import { arrange, hueGap, ratio } from "./color-rules.mjs";
+import { arrange, hueGap } from "./color-rules.mjs";
 const id = (name) => document.getElementById(name);
 const elt = (tag, text) => {
   const el = document.createElement(tag);
@@ -14,9 +14,7 @@ export function setupHunt(apply, preview) {
   let items = [],
     sorted = [],
     page = 0,
-    primary = "",
-    style = "calm",
-    activeKey = "";
+    primary = "";
   const size = 8;
   function rank() {
     const target = primary ? hsl(primary) : null;
@@ -31,11 +29,7 @@ export function setupHunt(apply, preview) {
             ),
           )
         : 0;
-      const styleCost =
-        style === "bold"
-          ? (180 - item.span) / 180 + 1 / Math.max(1, item.contrast)
-          : item.span / 180;
-      item.score = distance * 4 + styleCost;
+      item.score = distance;
     }
     sorted =
       id("hunt-order").value === "new"
@@ -104,16 +98,7 @@ export function setupHunt(apply, preview) {
       for (const code of snapshot.codes) {
         const colors = code.match(/.{6}/g).map((c) => "#" + c);
         if (!colors.every(safe)) continue;
-        const hues = colors.map(hsl),
-          vivid = hues.filter((c) => c[1] > 0.18);
-        const span = Math.max(
-          0,
-          ...vivid.flatMap((a) => vivid.map((b) => hueGap(a[0], b[0]))),
-        );
-        const contrast = Math.max(
-          ...colors.flatMap((a) => colors.map((b) => ratio(a, b))),
-        );
-        items.push({ code, colors, hues, span, contrast });
+        items.push({ code, colors, hues: colors.map(hsl) });
       }
       id("hunt-status").textContent =
         snapshot.retrieved +
@@ -128,12 +113,9 @@ export function setupHunt(apply, preview) {
       id("hunt-status").textContent =
         "色卡未載入，請重新整理或開啟完整色碼資料。";
     });
-  return (nextPrimary, nextStyle) => {
-    const key = nextPrimary + "|" + nextStyle;
-    if (key === activeKey) return;
+  return (nextPrimary) => {
+    if (nextPrimary === primary) return;
     primary = nextPrimary;
-    style = nextStyle;
-    activeKey = key;
     if (items.length) rank();
   };
 }

@@ -145,7 +145,7 @@ export function fabric() {
   return {
     scene,
     setColor(background) {
-      uniforms.base.value.set(background || "#D9DCE5").convertLinearToSRGB();
+      uniforms.base.value.set(background || "#ECECEE").convertLinearToSRGB();
     },
     frame(t, view, w, h) {
       uniforms.time.value = t;

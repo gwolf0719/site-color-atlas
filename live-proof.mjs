@@ -52,7 +52,7 @@ export function paintDesk(picks, names, accentOverride) {
     }
   }
   // 大標題可讀時直接上色；明度接近時，用同色下劃線呈現選色。
-  const surface = bg || "#D9DCE5";
+  const surface = bg || "#ECECEE";
   root.toggleAttribute(
     "data-ink-primary",
     Boolean(primary && ratio(primary, surface) >= 3),

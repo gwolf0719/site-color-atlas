@@ -340,28 +340,6 @@
 .more-cards[hidden] {
   display: none;
 }
-.directions {
-  display: flex;
-  gap: 5px;
-}
-.directions button {
-  background: #302c3d;
-  color: #f6f3fa;
-  border: 1px solid #827b90;
-  border-radius: 5px;
-  min-height: 42px;
-  padding: 7px 14px;
-}
-.directions button[aria-pressed="true"] {
-  background: #dcc9e6;
-  color: #2a1c31;
-}
-.stage #style-tip {
-  font-size: 0.86rem;
-  line-height: 1.55;
-  color: #d1cbdd;
-  margin: 7px 0 14px;
-}
 .allocation select {
   font-size: 0.84rem;
   padding: 4px;

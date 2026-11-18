@@ -4,9 +4,6 @@ import {
   Scene,
   OrthographicCamera,
   Group,
-  HemisphereLight,
-  DirectionalLight,
-  MeshStandardMaterial,
   MeshBasicMaterial,
   Mesh,
   Raycaster,
@@ -44,12 +41,7 @@ export function createWheel(host, onChoose, onHover, onLoss, onRemove) {
   camera.updateProjectionMatrix();
   const rig = new Group(),
     wedges = new Group();
-  scene.add(rig, new HemisphereLight(0xe7e5f2, 0x6f556e, 1.55));
-  const key = new DirectionalLight(0xf0ecf2, 2.65);
-  key.position.set(-3, 4, 5);
-  const rim = new DirectionalLight(0xa9b8e1, 1.55);
-  rim.position.set(3, -2, 2);
-  scene.add(key, rim);
+  scene.add(rig);
   rig.add(wedges);
   const makeMaterial = (color) =>
     new MeshBasicMaterial({ color, side: DoubleSide });
@@ -142,11 +134,10 @@ export function createWheel(host, onChoose, onHover, onLoss, onRemove) {
         (i / Math.max(1, values.length - 1)) *
           TAU *
           (values.length <= 12 ? 0.62 : 0.87);
-      const material = new MeshStandardMaterial({
+      const material = new MeshBasicMaterial({
         vertexColors: true,
         side: DoubleSide,
-        roughness: 0.93,
-        metalness: 0,
+        toneMapped: false,
       });
       const mesh = new Mesh(
         paperLeaf(

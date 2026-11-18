@@ -213,7 +213,7 @@ function showPanel(name) {
   sheet.scrollTop = 0;
 }
 
-export function setupCatalog(applyPalette, context, preview) {
+export function setupCatalog(applyPalette, getPrimary, preview) {
   previewGroup = preview;
   sheet.addEventListener("close", () => previewGroup(null));
   let teamRequest, updateHunt;
@@ -222,7 +222,7 @@ export function setupCatalog(applyPalette, context, preview) {
     showPanel(name);
     if (name === "hunt") {
       updateHunt ??= setupHunt(applyPalette, previewGroup);
-      updateHunt(...context());
+      updateHunt(getPrimary());
     } else if (name === "library" || name === "preview") {
       teamRequest ??= loadTeam(applyPalette).catch(() => {
         teamRequest = null;

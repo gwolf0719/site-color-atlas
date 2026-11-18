@@ -31,10 +31,10 @@ function distance(a, b) {
     y = rgb(b);
   return Math.sqrt(x.reduce((s, v, i) => s + (v - y[i]) ** 2, 0) / 3);
 }
-export function candidates(picks, mode, primary) {
+export function candidates(picks, primary) {
   if (!picks.length) return layer(40, 44);
   if (picks.length >= LIMIT) return [];
-  return harmonies(picks, mode, primary);
+  return harmonies(picks, primary);
 }
 function canAdd(picks, hex) {
   return (
@@ -126,7 +126,7 @@ export function decode(value) {
 export function format(picks, names = defaults) {
   return [
     "網站配色配置表",
-    "請依下列色碼與面積比例設計畫面。",
+    "請使用以下色碼設計介面。品牌與裝飾用色限於這份清單，百分比為建議的視覺面積。",
     ...picks.map(
       (p, i) =>
         letter(i) + " " + names[i] + " " + p.hex + "　" + p.percent + "%",

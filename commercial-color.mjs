@@ -2,6 +2,10 @@ import { hsl, color, ratio, safe } from "./spectrum.mjs";
 import { ink } from "./color-rules.mjs";
 
 export const contexts = {
+  general: {
+    name: "通用",
+    usage: "請保留已選的角色與 HEX，版面依指定比例分配用色。",
+  },
   brand: {
     name: "品牌官網",
     usage: "主色重複用在品牌識別與主標題，讓不同頁面使用同一個品牌線索。",
@@ -38,11 +42,14 @@ export function brief(picks, names, context, variant) {
   const use = contexts[Object.hasOwn(contexts, context) ? context : "brand"];
   const primary = picks[names.indexOf("主色")],
     bg = picks[names.indexOf("背景")]?.hex;
-  const lines = ["商業用途：" + use.name, use.usage];
+  const lines =
+    use === contexts.general
+      ? [use.usage]
+      : ["商業用途：" + use.name, use.usage];
   if (!primary || !bg)
     return {
       use,
-      lines: [...lines, "請先補齊主色與背景，再確認正文與操作的對比。"],
+      lines: [...lines, "未指定的角色沿用既有設定，新增色碼前請先詢問。"],
     };
   const accent = variant || primary.hex;
   const samplePicks = variant
@@ -84,6 +91,8 @@ export function renderCommercial(picks, names, context, compare) {
   id("try-chroma").textContent = alternate ? "看原主色" : "試看較低彩度";
   id("try-chroma").setAttribute("aria-pressed", String(Boolean(alternate)));
   id("apply-chroma").hidden = !alternate;
-  id("business-note").textContent = shown.lines.slice(1).join(" ");
+  id("business-note").textContent = shown.lines
+    .slice(shown.use === contexts.general ? 0 : 1)
+    .join(" ");
   return alternate ? variant : null;
 }
