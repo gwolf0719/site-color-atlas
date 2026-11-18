@@ -11,6 +11,7 @@
     />
     <link rel="stylesheet" href="style.css" />
     <link rel="stylesheet" href="mixer.css" />
+    <link rel="stylesheet" href="exhibition.css" />
     <script type="module" src="mixer.js"></script>
     <script type="module" src="app.js"></script>
   </head>
@@ -29,8 +30,9 @@
     <main class="wrap">
       <section id="mixer" aria-labelledby="mix-title">
         <div class="stage">
+          <div id="wheel-host" aria-hidden="true"></div>
           <div class="stage-copy">
-            <h1 id="mix-title">色環配色台</h1>
+            <h1 id="mix-title">選一個<br /><em>主色。</em></h1>
             <p id="instruction"></p>
             <div class="choice-area">
               <div
@@ -45,64 +47,70 @@
                 </button>
               </div>
               <p id="style-tip"></p>
-              <div id="tones" class="tone-controls">
-                <label
-                  >明度
-                  <select id="lightness">
-                    <option value="18">極深</option>
-                    <option value="29">深色</option>
-                    <option value="40" selected>中深</option>
-                    <option value="50">中等</option>
-                    <option value="62">明亮</option>
-                    <option value="74">淺色</option>
-                  </select></label
-                ><label
-                  >彩度
-                  <select id="saturation">
-                    <option value="16">灰調</option>
-                    <option value="30">柔和</option>
-                    <option value="44" selected>標準</option>
-                    <option value="58">濃郁</option>
-                  </select></label
-                >
-              </div>
-              <label for="color-choice" id="choice-label">色環選項</label>
-              <div class="choose">
-                <select id="color-choice"></select
-                ><button id="add-color">加入配色</button>
-              </div>
               <div id="recommendations" aria-label="推薦配色"></div>
               <div class="mix-browse">
                 <a id="find-hunt" href="#hunt" hidden>看整組四色 ↘</a
                 ><button id="more-colors" hidden>下一批推薦</button
                 ><button id="switch-colors" hidden>瀏覽全色環</button>
               </div>
-              <details id="brand-color">
-                <summary>輸入指定 HEX 色碼</summary>
-                <form id="hex-form">
-                  <label for="custom-hex">HEX 色碼</label
-                  ><input
-                    id="custom-hex"
-                    placeholder="#4659A8"
-                    maxlength="7"
-                    autocomplete="off"
-                    spellcheck="false"
-                  /><button>加入此色</button>
-                </form>
-                <small id="hex-feedback" role="status"></small>
+              <details id="precision">
+                <summary>精準選色</summary>
+                <div class="precision-inside">
+                  <div id="tones" class="tone-controls">
+                    <label
+                      >明度
+                      <select id="lightness">
+                        <option value="18">極深</option>
+                        <option value="29">深色</option>
+                        <option value="40" selected>中深</option>
+                        <option value="50">中等</option>
+                        <option value="62">明亮</option>
+                        <option value="74">淺色</option>
+                      </select></label
+                    ><label
+                      >彩度
+                      <select id="saturation">
+                        <option value="16">灰調</option>
+                        <option value="30">柔和</option>
+                        <option value="44" selected>標準</option>
+                        <option value="58">濃郁</option>
+                      </select></label
+                    >
+                  </div>
+                  <label for="color-choice" id="choice-label">色環選項</label>
+                  <div class="choose">
+                    <select id="color-choice"></select
+                    ><button id="add-color">加入配色</button>
+                  </div>
+                  <details id="brand-color">
+                    <summary>輸入指定 HEX 色碼</summary>
+                    <form id="hex-form">
+                      <label for="custom-hex">HEX 色碼</label
+                      ><input
+                        id="custom-hex"
+                        placeholder="#4659A8"
+                        maxlength="7"
+                        autocomplete="off"
+                        spellcheck="false"
+                      /><button>加入此色</button>
+                    </form>
+                    <small id="hex-feedback" role="status"></small>
+                  </details>
+                </div>
               </details>
             </div>
           </div>
           <div class="orbit" id="orbit">
             <div id="ring-fallback" aria-hidden="true"></div>
-            <div id="wheel-host" aria-hidden="true"></div>
+
             <div class="hub" aria-hidden="true">
               <small id="hub-role">選取主色</small
               ><strong id="hub-letter">A</strong><span id="hover-code"></span>
             </div>
           </div>
+          <a class="downlink" href="#configuration">色碼配置表 ↓</a>
         </div>
-        <div class="mix-output">
+        <div class="mix-output" id="configuration">
           <div class="section-head">
             <h2>色碼配置表</h2>
             <div class="mix-tools">

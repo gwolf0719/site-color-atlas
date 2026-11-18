@@ -1,10 +1,12 @@
+import { fabric, pleatedSector } from "./chromatic-scene.js";
 import {
   WebGLRenderer,
   Scene,
   OrthographicCamera,
   Group,
-  Shape,
-  ExtrudeGeometry,
+  HemisphereLight,
+  DirectionalLight,
+  MeshStandardMaterial,
   MeshBasicMaterial,
   Mesh,
   Raycaster,
@@ -18,17 +20,6 @@ import {
 } from "./vendor/three.js";
 
 const TAU = 2 * Math.PI;
-function band(inner, outer, start, end, depth) {
-  const shape = new Shape();
-  shape.absarc(0, 0, outer, start, end, false);
-  shape.absarc(0, 0, inner, end, start, true);
-  shape.closePath();
-  return new ExtrudeGeometry(shape, {
-    depth,
-    bevelEnabled: false,
-    curveSegments: 30,
-  });
-}
 export function createWheel(host, onChoose, onHover, onLoss) {
   const renderer = new WebGLRenderer({
     alpha: true,
@@ -38,6 +29,19 @@ export function createWheel(host, onChoose, onHover, onLoss) {
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
   renderer.setClearColor(0, 0);
   host.append(renderer.domElement);
+  const orbit = document.getElementById("orbit"),
+    stage = host.parentElement;
+  const backdrop = fabric();
+  renderer.autoClear = false;
+  let canvasWidth = 1,
+    canvasHeight = 1,
+    view = { x: 0, y: 0, w: 1, h: 1 };
+  let scrollProgress = 0;
+  const scroll = () => {
+    const rect = stage.getBoundingClientRect();
+    scrollProgress = Math.min(1, Math.max(0, -rect.top / rect.height));
+    schedule();
+  };
   const scene = new Scene(),
     camera = new OrthographicCamera(-3, 3, 3, -3, 0.1, 25);
   camera.position.z = 10;
@@ -45,7 +49,12 @@ export function createWheel(host, onChoose, onHover, onLoss) {
   const rig = new Group(),
     wedges = new Group(),
     guides = new Group();
-  scene.add(rig);
+  scene.add(rig, new HemisphereLight(0xe7e5f2, 0x6f556e, 1.55));
+  const key = new DirectionalLight(0xf0ecf2, 2.65);
+  key.position.set(-3, 4, 5);
+  const rim = new DirectionalLight(0xa9b8e1, 1.55);
+  rim.position.set(3, -2, 2);
+  scene.add(key, rim);
   rig.add(wedges, guides);
   const makeMaterial = (color) =>
     new MeshBasicMaterial({ color, side: DoubleSide });
@@ -94,7 +103,7 @@ export function createWheel(host, onChoose, onHover, onLoss) {
     for (const mesh of [...wedges.children]) {
       wedges.remove(mesh);
       mesh.geometry.dispose();
-      mesh.material.forEach((m) => m.dispose());
+      mesh.material.dispose();
     }
   }
   const ratioBand = new Group();
@@ -123,6 +132,7 @@ export function createWheel(host, onChoose, onHover, onLoss) {
       ratioBand.add(segment);
       startAngle -= arc;
     }
+    backdrop.setColor(picks.at(-1)?.hex || "#9869A1");
     clearWedges();
     options = values;
     active = null;
@@ -131,10 +141,14 @@ export function createWheel(host, onChoose, onHover, onLoss) {
       const angle = TAU / values.length;
       const start = Math.PI / 2 - angle * (i + 1) + 0.009,
         end = Math.PI / 2 - angle * i - 0.009;
-      const face = makeMaterial(item.hex),
-        edge = makeMaterial(item.hex);
-      edge.color.multiplyScalar(0.62);
-      const mesh = new Mesh(band(1.16, 2.23, start, end, 0.15), [face, edge]);
+      const material = new MeshStandardMaterial({
+        color: item.hex,
+        side: DoubleSide,
+        roughness: 0.42,
+        metalness: 0.14,
+      });
+      const folds = Math.max(1, Math.round(72 / values.length));
+      const mesh = new Mesh(pleatedSector(start, end, folds), material);
       mesh.userData = { index: i, theta: (start + end) / 2, hover: 0 };
       wedges.add(mesh);
     }
@@ -146,30 +160,62 @@ export function createWheel(host, onChoose, onHover, onLoss) {
     const dt = Math.min(0.06, (now - (last || now)) / 1000);
     last = now;
     elapsed += dt;
-    intro = motion.matches ? 1 : Math.min(1, intro + 2.35 * dt);
+    intro = motion.matches ? 1 : Math.min(1, intro + 0.91 * dt);
     const smooth = 1 - (1 - intro) ** 3;
     rig.rotation.x = motion.matches
-      ? 0
-      : -0.19 + 0.04 * Math.sin(elapsed * 0.55) + pointerY * 0.055;
+      ? -0.25
+      : -0.32 +
+        0.13 * Math.sin(elapsed * 0.48) +
+        pointerY * 0.1 +
+        scrollProgress * 0.48;
     rig.rotation.y = motion.matches
+      ? -0.09
+      : -0.09 + 0.17 * Math.sin(elapsed * 0.39) + pointerX * 0.12;
+    wedges.rotation.z = motion.matches
       ? 0
-      : 0.12 * Math.sin(elapsed * 0.46) + pointerX * 0.075;
-    wedges.rotation.z = motion.matches ? 0 : (1 - smooth) * 0.38;
+      : (1 - smooth) * 1.36 +
+        0.055 * Math.sin(elapsed * 0.37) +
+        scrollProgress * 0.24;
     guides.rotation.z = motion.matches ? 0 : elapsed * 0.06;
-    wedges.scale.setScalar(0.91 + 0.09 * smooth);
+    wedges.scale.setScalar(0.71 + 0.29 * smooth);
     for (const mesh of wedges.children) {
       const m = mesh.userData;
       const goal = m.index === active ? 1 : 0;
       m.hover = motion.matches
         ? goal
         : m.hover + (goal - m.hover) * Math.min(1, dt * 12);
-      const offset = 0.095 * m.hover + 0.18 * (1 - smooth);
+      const stagger = motion.matches
+        ? 1
+        : Math.min(
+            1,
+            Math.max(0, intro * 1.3 - (m.index / options.length) * 0.27),
+          );
+      const sweep = (1 - stagger) ** 2;
+      const offset = 0.145 * m.hover + 0.66 * sweep;
+      mesh.rotation.z = sweep * 0.4;
       mesh.position.set(
         Math.cos(m.theta) * offset,
         Math.sin(m.theta) * offset,
-        0.12 * m.hover,
+        0.32 * m.hover +
+          0.4 * sweep +
+          (motion.matches ? 0 : 0.032 * Math.sin(elapsed * 1.2 + m.theta * 2)),
       );
     }
+    const still = motion.matches;
+    backdrop.frame(
+      still ? 0 : elapsed,
+      canvasWidth / canvasHeight,
+      still ? 0 : scrollProgress,
+      still ? 0 : 1 - smooth,
+      pointerX,
+      pointerY,
+      still,
+    );
+    renderer.setViewport(0, 0, canvasWidth, canvasHeight);
+    renderer.clear();
+    renderer.render(backdrop.scene, camera);
+    renderer.clearDepth();
+    renderer.setViewport(view.x, view.y, view.w, view.h);
     renderer.render(scene, camera);
     if (!motion.matches && running) schedule();
   }
@@ -178,7 +224,7 @@ export function createWheel(host, onChoose, onHover, onLoss) {
       frame = requestAnimationFrame(draw);
   }
   function hit(event) {
-    const rect = renderer.domElement.getBoundingClientRect();
+    const rect = orbit.getBoundingClientRect();
     cursor.set(
       ((event.clientX - rect.left) / rect.width) * 2 - 1,
       1 - ((event.clientY - rect.top) / rect.height) * 2,
@@ -189,30 +235,39 @@ export function createWheel(host, onChoose, onHover, onLoss) {
       null
     );
   }
-  renderer.domElement.onpointermove = (e) => {
+  orbit.onpointermove = (e) => {
     active = hit(e);
     pointerX = cursor.x;
     pointerY = cursor.y;
-    renderer.domElement.style.cursor = active === null ? "default" : "pointer";
+    orbit.style.cursor = active === null ? "default" : "pointer";
     onHover(options[active] || null);
     schedule();
   };
-  renderer.domElement.onpointerleave = () => {
+  orbit.onpointerleave = () => {
     active = null;
     pointerX = pointerY = 0;
     onHover(null);
     schedule();
   };
-  renderer.domElement.onclick = (e) => {
-    const i = hit(e);
+  orbit.onclick = (e) => {
+    const i = hit(e) ?? active;
     if (i !== null && options[i]) onChoose(options[i].hex);
   };
   function resize() {
-    const { width, height } = host.getBoundingClientRect();
-    if (!width || !height) return;
-    renderer.setSize(width, height, false);
-    const half = 2.84,
-      aspect = width / height;
+    const whole = host.getBoundingClientRect(),
+      square = orbit.getBoundingClientRect();
+    if (!whole.width || !square.width) return;
+    canvasWidth = whole.width;
+    canvasHeight = whole.height;
+    renderer.setSize(canvasWidth, canvasHeight, false);
+    view = {
+      x: square.left - whole.left,
+      y: whole.bottom - square.bottom,
+      w: square.width,
+      h: square.height,
+    };
+    const half = 2.79,
+      aspect = view.w / view.h;
     camera.left = -half * aspect;
     camera.right = half * aspect;
     camera.top = half;
@@ -222,6 +277,8 @@ export function createWheel(host, onChoose, onHover, onLoss) {
   }
   const size = new ResizeObserver(resize);
   size.observe(host);
+  size.observe(orbit);
+  window.addEventListener("scroll", scroll, { passive: true });
   const observer = new IntersectionObserver(([entry]) => {
     visible = entry.isIntersecting;
     if (visible) {
@@ -247,7 +304,12 @@ export function createWheel(host, onChoose, onHover, onLoss) {
       size.disconnect();
       motion.removeEventListener("change", resume);
       document.removeEventListener("visibilitychange", resume);
+      window.removeEventListener("scroll", scroll);
+      orbit.onclick = null;
+      orbit.onpointermove = null;
+      orbit.onpointerleave = null;
       clearWedges();
+      backdrop.dispose();
       renderer.dispose();
       renderer.domElement.remove();
       onLoss();

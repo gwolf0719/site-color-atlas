@@ -199,6 +199,21 @@ function render() {
   copyTicket++;
   const whole = !picks.length || browseAll;
   const full = picks.length === LIMIT;
+  const nextRole =
+    defaults.find(
+      (r) => r !== "其他" && !names.slice(0, picks.length).includes(r),
+    ) || "點綴色";
+  const title = el("mix-title"),
+    lead = !picks.length ? "選一個" : full ? "配色" : "加入";
+  const emphasis = full ? "完成。" : nextRole + "。";
+  if (title.dataset.caption !== lead + emphasis) {
+    title.replaceChildren(
+      document.createTextNode(lead),
+      document.createElement("br"),
+      make("em", emphasis),
+    );
+    title.dataset.caption = lead + emphasis;
+  }
   const primary =
     picks[names.slice(0, picks.length).indexOf("主色")]?.hex || picks[0]?.hex;
   updateHunt(primary || "", style);
@@ -241,7 +256,7 @@ function render() {
   el("hub-role").textContent = full
     ? "配置完成"
     : picks.length
-      ? "選搭配色"
+      ? nextRole
       : "選取主色";
   el("hub-letter").textContent = full ? "8" : letter(picks.length);
   el("choice-label").textContent = whole ? "色環選項" : "推薦配色";

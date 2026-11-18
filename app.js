@@ -211,3 +211,15 @@ async function init() {
 init().catch(() => {
   byId("catalog").textContent = "色卡載入失敗，請重新整理頁面。";
 });
+
+const chapters = new IntersectionObserver((entries) => {
+  for (const entry of entries)
+    if (entry.isIntersecting) {
+      entry.target.classList.add("arriving");
+      chapters.unobserve(entry.target);
+    }
+});
+for (const section of document.querySelectorAll(
+  "#hunt,#library,#sources,#configuration",
+))
+  chapters.observe(section);
