@@ -1,3 +1,7 @@
+/*
+ * 檔案功能：負責主視覺色碼讀數、Josef Albers 並置比較色塊連動、標題切換過渡與飛行色票動畫。
+ * 相依性：依賴 color-rules.mjs（文字對比色計算）與 spectrum.mjs（HSL 轉換）。
+ */
 import { ink } from "./color-rules.mjs";
 import { hsl } from "./spectrum.mjs";
 
@@ -10,6 +14,7 @@ let flight,
   currentHeading,
   lastSample = [[], [], null];
 
+// 切換並置比較畫布與 3D 色環顯示狀態，並同步更新比較色塊
 export function showStudy(open) {
   plate.toggleAttribute("data-study", open);
   toggle.setAttribute("aria-expanded", String(open));
@@ -19,12 +24,13 @@ export function showStudy(open) {
 }
 toggle.onclick = () => showStudy(study.hidden);
 
+// 更新主舞台即時 HSL/HEX 讀數與並置比較的左右背景及中央測試色塊
 export function proofColors(sample, roles, candidate) {
   lastSample = [sample, roles, candidate];
   const value = (role) => sample[roles.indexOf(role)]?.hex;
   const primary = value("主色");
   const focusColor = candidate || primary || sample[0]?.hex;
-  const chip = primary || focusColor || "#AD254A";
+  const chip = candidate || primary || focusColor || "#AD254A";
   const left = value("背景") || "#DDDBE0";
   const secondary = value("輔助色");
   const right = secondary && secondary !== left ? secondary : ink(left);

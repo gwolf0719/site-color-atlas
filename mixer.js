@@ -1,3 +1,7 @@
+/*
+ * 檔案功能：配色標本室前端主控制器，串聯全視窗 3D 出血色環、左側單軸比例配置、即時底色浸潤、網址狀態與 AI 配置表匯出。
+ * 相依性：依賴 motion-studio.mjs、live-proof.mjs、commercial-color.mjs、paper-interactions.mjs、color-rules.mjs、hunt.js、spectrum.mjs、mixer-data.mjs 與 ring.js。
+ */
 import {
   showStudy,
   proofColors,
@@ -128,15 +132,31 @@ function rolePreview() {
   }
   const hasBg = names.slice(0, picks.length).includes("背景");
   const hasPrimary = names.slice(0, picks.length).includes("主色");
-  el("role-contrast").textContent =
-    hasBg && hasPrimary
-      ? "主色與背景對比 " +
-        ratio(c.primary, c.bg).toFixed(2) +
-        "∶1。" +
-        (ratio(c.primary, c.bg) >= 4.5
-          ? "此配對可用於一般文字。"
-          : "主色適合大色塊，內文請另選對比足夠的字色。")
-      : "指定主色與背景後，這裡會顯示兩色的文字對比。";
+  const badge = el("wcag-badge");
+  if (hasBg && hasPrimary) {
+    const contrast = ratio(c.primary, c.bg);
+    const grade =
+      contrast >= 7
+        ? ["aaa", "AAA " + contrast.toFixed(2) + "∶1"]
+        : contrast >= 4.5
+          ? ["aa", "AA " + contrast.toFixed(2) + "∶1"]
+          : contrast >= 3
+            ? ["large", "大字 " + contrast.toFixed(2) + "∶1"]
+            : ["decor", "裝飾 " + contrast.toFixed(2) + "∶1"];
+    badge.hidden = false;
+    badge.dataset.grade = grade[0];
+    badge.textContent = grade[1];
+    el("role-contrast").textContent =
+      contrast >= 4.5
+        ? "可讀性達標，主色與背景可直接用於內文與介面文字。"
+        : contrast >= 3
+          ? "適合大標題、圖示或按鈕色塊，小字內文請另配高對比字色。"
+          : "對比偏低，建議僅用於大面積色塊或裝飾，勿作為文字色。";
+  } else {
+    badge.hidden = true;
+    el("role-contrast").textContent =
+      "指定主色與背景後，這裡會顯示 WCAG 對比度與實境元件預覽。";
+  }
 }
 let page = 0,
   browseAll = false;
@@ -272,9 +292,17 @@ function trialProof(hex, action = "add", group) {
   proofColors(sample, sampleRoles, hex);
   drawProof(picks, sample, caption, sampleRoles);
   const stage = el("wheel-host").parentElement;
+  const root = document.documentElement;
   const bg = sample[sampleRoles.indexOf("背景")]?.hex;
   const tryBg = !!bg && bg !== backgroundColor();
   stage.toggleAttribute("data-trial-bg", tryBg);
+  if (bg) {
+    root.style.setProperty("--stage-bg", bg);
+    root.style.setProperty("--stage-ink", ink(bg));
+  } else {
+    root.style.removeProperty("--stage-bg");
+    root.style.removeProperty("--stage-ink");
+  }
   if (tryBg) {
     stage.style.setProperty("--trial-base", bg);
     stage.style.setProperty("--trial-ink", ink(bg));
@@ -282,7 +310,12 @@ function trialProof(hex, action = "add", group) {
   wheel?.setBackdrop(bg);
   paintDesk(sample, sampleRoles, role === "其他" ? hex : null);
 }
+let suppressHover = false;
+document.addEventListener("pointermove", () => {
+  suppressHover = false;
+});
 function hover(candidate, show = false, action = "add") {
+  if (show && suppressHover) return;
   el("hover-code").textContent = candidate?.hex || "";
   if (pinned && show) endTrial();
   if (pinned) return;
@@ -523,6 +556,16 @@ function render() {
       : "推薦搭配";
   el("wheel-kind").textContent +=
     "  /  " + (full ? picks.length : options.length) + " 色";
+  const stepOrder = ["主色", "背景", "輔助色", "就緒"];
+  const activeStep = ready ? "就緒" : upcoming;
+  const activeIndex = Math.max(0, stepOrder.indexOf(activeStep));
+  const fill = el("progress-bar-fill");
+  if (fill) fill.style.width = (ready ? 100 : (activeIndex + 1) * 25) + "%";
+  for (const li of el("progress-steps").children) {
+    const idx = stepOrder.indexOf(li.dataset.step);
+    li.classList.toggle("is-done", idx < activeIndex || (ready && idx === 3));
+    li.classList.toggle("is-current", idx === activeIndex && !ready);
+  }
   turnPage();
   el("choice-label").textContent = whole ? "色環選項" : "推薦配色";
   el("recommendations").replaceChildren();
@@ -543,6 +586,7 @@ function render() {
   for (const choice of swatches) {
     const button = make("button");
     button.className = "rec";
+    button.dataset.hex = choice.hex;
     button.style.setProperty(
       "--order",
       el("recommendations").childElementCount,
@@ -557,7 +601,11 @@ function render() {
       () => hover(choice, true),
       () => hover(null),
     );
-    button.onclick = () => choose(choice.hex, button.getBoundingClientRect());
+    button.onclick = () => {
+      suppressHover = true;
+      hover(null);
+      choose(choice.hex, button.getBoundingClientRect());
+    };
     el("recommendations").append(button);
   }
   el("color-choice").disabled = full;
@@ -585,6 +633,9 @@ function render() {
   rolePreview();
   chromaTrial = false;
   businessProof();
+  if (picks.length && el("recipe-sheet").hidden) {
+    setRecipe(true);
+  }
 }
 function fallbackHit(e) {
   const rect = el("ring-fallback").getBoundingClientRect();
@@ -716,24 +767,56 @@ for (const id of [
   });
 }
 el("undo").onclick = () => removeSelected(picks.at(-1)?.hex);
-function setRecipe(open) {
+let userCollapsedRecipe = false;
+function setRecipe(open, manual = false) {
+  if (manual) userCollapsedRecipe = !open;
   el("recipe-sheet").hidden = !open;
   el("open-recipe").setAttribute("aria-expanded", String(open));
   endTrial();
-  if (open) el("recipe-sheet").scrollIntoView({ block: "nearest" });
-  else {
+  if (open && manual) el("recipe-sheet").scrollIntoView({ block: "nearest" });
+  else if (!open) {
     chromaTrial = false;
     if (location.hash === "#configuration") updateLink();
   }
 }
-el("open-recipe").onclick = () => setRecipe(el("recipe-sheet").hidden);
+el("open-recipe").onclick = () => setRecipe(el("recipe-sheet").hidden, true);
 el("recipe-sheet").querySelector("[data-close]").onclick = () => {
-  setRecipe(false);
+  setRecipe(false, true);
   el("open-recipe").focus();
 };
+function syncTonePills() {
+  for (const container of document.querySelectorAll(".tone-pills[data-sync]")) {
+    const select = el(container.dataset.sync);
+    if (!select) continue;
+    if (!container.childElementCount) {
+      for (const opt of select.options) {
+        const btn = make("button", opt.textContent);
+        btn.type = "button";
+        btn.dataset.value = opt.value;
+        btn.onclick = () => {
+          select.value = opt.value;
+          select.dispatchEvent(new Event("change"));
+          syncTonePills();
+        };
+        container.append(btn);
+      }
+    }
+    for (const btn of container.children) {
+      btn.setAttribute("aria-pressed", String(btn.dataset.value === select.value));
+    }
+  }
+}
+syncTonePills();
+el("custom-hex").addEventListener("input", () => {
+  const raw = el("custom-hex").value.trim().replace(/^#/, "");
+  if (/^[0-9a-fA-F]{6}$/.test(raw)) {
+    el("hex-dot").style.backgroundColor = "#" + raw;
+  }
+});
 function resetDesk() {
   cancelFlight();
   showStudy(false);
+  userCollapsedRecipe = false;
   setRecipe(false);
   el("custom-tools").open = false;
   picks = [];
@@ -748,11 +831,10 @@ function resetDesk() {
       [...select.options].find((o) => o.defaultSelected)?.value ??
       select.options[0].value;
   }
-  el("advanced-output").open =
-    el("precision").open =
-    el("background-options").open =
-      false;
+  syncTonePills();
+  el("advanced-output").open = false;
   el("hex-form").reset();
+  el("hex-dot").style.backgroundColor = "#4659A8";
   el("bg-feedback").textContent = "";
   clearHold();
 

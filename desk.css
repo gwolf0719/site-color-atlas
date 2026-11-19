@@ -1,325 +1,260 @@
-body > header {
-  position: sticky;
-  top: 0;
-  z-index: 5;
-}
-.head nav,
-.desk-actions,
+/*
+ * 檔案功能：左側海報垂直構成欄之色彩比例色帶、零表單感色號規格表與底部行動按鈕（絕不橫跨右側切斷色環）。
+ * 相依性：依賴 style.css 全視窗畫布變數，配合 paper-interactions.mjs 與 mixer.js。
+ */
+
+.stage-foot,
 .sheet-head,
-.catalog-options {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.head nav button,
-.desk-actions button,
-.sheet-head button,
-.catalog-options button,
-#back-cards {
-  min-height: 42px;
-  padding: 7px 12px;
-  border: 1px solid currentColor;
-  color: inherit;
-  background: transparent;
-}
-.head #open-library {
-  border-color: transparent;
-}
-.head .reset-desk {
-  border: 0;
-}
-.desk-actions {
-  flex-wrap: wrap;
-  margin-top: 0;
-}
-.desk-actions button {
-  min-height: 44px;
-  font-size: 0.88rem;
-  border-radius: 3px;
-}
-.desk-actions #quick-copy:enabled {
-  background: var(--print);
-  color: var(--surface);
-  border-color: var(--print);
-}
-.desk-actions button:disabled {
-  color: var(--print);
-  border-color: color-mix(in srgb, currentColor 32%, transparent);
-  cursor: default;
-}
-#desk-feedback {
-  font-size: 0.82rem;
-}
-.desk-sheet {
-  background: var(--paper);
-  color: var(--ink);
-  padding: 0 22px 16px;
-  border: 1px solid var(--ink);
-  width: min(540px, 90vw);
-  max-width: 100%;
-  max-height: min(84svh, 920px);
-  margin: auto auto auto max(4vw, calc((100vw - 1240px) / 2));
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  box-shadow: 0 12px 55px #191a202b;
-}
-.desk-sheet::backdrop {
-  background: #17182238;
-}
-.desk-sheet [hidden] {
+#advanced-output,
+#ui-sample-card,
+#mix-empty {
   display: none !important;
 }
-.sheet-head {
-  position: sticky;
-  top: 0;
-  z-index: 3;
-  justify-content: space-between;
-  background: var(--paper);
-  padding: 15px 0 12px;
-  border-bottom: 1px solid var(--ink);
-}
-.sheet-head h2 {
-  font:
-    700 clamp(1.5rem, 3.4vw, 2.5rem) / 1.2 "Songti TC",
-    "Noto Serif TC",
-    serif;
-}
-.sheet-head button {
-  white-space: nowrap;
-  font-size: 0.85rem;
-}
-.catalog-options {
-  flex-wrap: wrap;
-  padding: 12px 0 5px;
-}
-.catalog-options button {
-  padding-inline: 10px;
-  border-color: var(--rule);
-  font-size: 0.85rem;
-}
-.catalog-options button[aria-pressed="true"] {
-  background: var(--ink);
-  color: var(--paper);
-}
-.desk-sheet section:is(#hunt, #library, #preview, #sources) {
-  padding: 12px 0;
-  border: 0;
-}
-.desk-sheet section h2 {
-  font-family: inherit;
-  font-size: 1.15rem;
-  font-weight: 650;
-}
-.desk-sheet .catalog,
-.desk-sheet .sources {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-.desk-sheet .tools,
-.desk-sheet .detail-head,
-.desk-sheet .actions {
-  flex-wrap: wrap;
-  gap: 8px;
-}
-.desk-sheet .detail {
-  padding: 12px;
-}
-.desk-sheet .feature {
-  grid-template-columns: 1fr;
-}
-.desk-sheet .stats {
-  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
-}
-.desk-sheet .section-head {
-  flex-wrap: wrap;
-  gap: 5px;
-}
-.desk-sheet .mix-output {
-  width: 100%;
-  padding: 14px 0 0;
-}
-.desk-sheet .mix-output .section-head {
-  border: 0;
+
+.desk-sheet {
+  background: transparent;
+  color: inherit;
   padding: 0;
+  pointer-events: auto;
 }
-.desk-sheet .allocation {
+
+.mix-output {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* --- 左欄專屬無縫比例色帶（與左欄 360px 齊平，絕不切到右側巨幅色環） --- */
+.ratio-sheet {
+  position: relative;
+  width: 100%;
+}
+
+#proportion {
+  display: flex;
+  width: 100%;
+  height: 40px;
+  overflow: hidden;
+  box-shadow: var(--swatch-hairline);
+}
+
+#proportion button {
+  height: 100%;
+  min-width: 10px;
+  box-shadow: inset 1px 0 0 rgba(20, 20, 19, 0.14);
+  transition:
+    width 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 0.14s ease;
+}
+
+#proportion button:hover {
+  filter: brightness(0.93);
+}
+
+#seams {
+  position: relative;
+  height: 0;
+}
+
+#seams button {
+  position: absolute;
+  top: -40px;
+  width: 14px;
+  height: 40px;
+  transform: translateX(-50%);
+  background: transparent;
+  border: 0;
+  cursor: ew-resize;
+  z-index: 3;
+}
+
+#seams button::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 1.5px;
+  transform: translateX(-50%);
+  background: rgba(20, 20, 19, 0.35);
+  transition:
+    width 0.14s ease,
+    background-color 0.14s ease;
+}
+
+#seams button:hover::after,
+#seams button:focus-visible::after {
+  width: 3px;
+  background: var(--stage-ink);
+}
+
+/* --- 零表單感之海報色號規格列 --- */
+#allocations {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+}
+
+.allocation {
+  display: grid;
+  grid-template-columns: 12px minmax(0, 1fr) auto 42px 12px;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 0;
+  border-bottom: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+}
+
+.allocation .remove-chip {
+  width: 12px;
+  height: 12px;
+  box-shadow: var(--swatch-hairline);
+  transition: transform 0.14s ease;
+}
+
+.allocation .remove-chip:hover {
+  transform: scale(1.25);
+}
+
+.allocation label {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+  font-size: 0.76rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.allocation label code {
+  font-size: 0.76rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  opacity: 0.78;
+}
+
+/* 隱藏原生下拉選單醜箭頭，呈現純粹印刷字標感 */
+.allocation select {
+  appearance: none;
+  -webkit-appearance: none;
+  height: 22px;
+  padding: 0 4px;
+  border: 0;
+  background: transparent;
+  font-size: 0.72rem;
+  font-weight: 500;
+  opacity: 0.55;
+  text-align: right;
+  transition: opacity 0.15s ease;
+}
+
+.allocation select:hover,
+.allocation select:focus-visible {
+  opacity: 1;
+}
+
+.allocation input[type="number"] {
+  appearance: textfield;
+  -moz-appearance: textfield;
+  width: 42px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.allocation input[type="number"]::-webkit-inner-spin-button,
+.allocation input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
   margin: 0;
 }
-.sheet-buttons {
-  display: flex;
-  gap: 6px;
-}
-@media (max-width: 700px) {
-  .head {
-    gap: 4px;
-  }
-  .head nav {
-    gap: 2px;
-  }
-  .head nav button {
-    padding: 6px 8px;
-    font-size: 0.85rem;
-  }
-  .head .brand {
-    font-size: 1rem;
-  }
-  .desk-sheet {
-    margin: auto 0 0;
-    width: 100%;
-    max-width: 100vw;
-    max-height: 83svh;
-    padding-inline: 15px;
-    padding-bottom: max(16px, env(safe-area-inset-bottom));
-  }
-  .desk-sheet .tokens {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-@media (prefers-reduced-motion: no-preference) {
-  .desk-sheet[open] {
-    animation: open-sheet 0.22s ease-out both;
-  }
-  @keyframes open-sheet {
-    from {
-      transform: translateY(10px);
-      opacity: 0.35;
-    }
-    to {
-      transform: none;
-      opacity: 1;
-    }
-  }
-}
-.business-proof {
-  margin-block: 12px;
-}
-.business-proof label {
-  font-weight: 600;
-  font-size: 0.9rem;
-}
-.business-proof select,
-#chroma-tools button {
-  min-height: 38px;
-  background: var(--paper);
-  color: var(--ink);
-  border: 1px solid var(--rule);
-  padding: 5px 9px;
-}
-#chroma-tools {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-  margin-top: 8px;
-}
-#business-note {
-  margin: 8px 0;
-  font-size: 0.88rem;
-  line-height: 1.6;
+
+.allocation input[type="number"]:focus {
+  outline: none;
+  border-bottom: 1px solid currentColor;
 }
 
-#proof-strip button,
-#proportion button {
-  appearance: none;
-  min-width: 0;
-  padding: 0;
-  border: 0;
-  border-radius: 0;
-  flex: 0 0 auto;
-  cursor: pointer;
-}
-#proof-strip button:focus-visible,
-#proportion button:focus-visible,
-#proof-strip button:hover,
-#proportion button:hover {
-  outline: 2px solid #171822;
-  outline-offset: -4px;
-  box-shadow: inset 0 0 0 2px #fafafa;
-}
-.allocation .remove-chip {
-  width: 32px;
-  min-height: 32px;
-  padding: 0;
-  border: 1px solid #777780;
+.allocation > span {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  opacity: 0.5;
+  white-space: nowrap;
 }
 
-/* 角色直接著色在原有頁面，色卡本身始終保留來源色。 */
-:root[data-color-bg] {
-  --paper: var(--desk-bg);
-  --ink: var(--on-desk-bg);
-  --soft: var(--on-desk-bg);
-  --rule: color-mix(in srgb, var(--ink) 44%, var(--paper));
+/* --- 極簡對比度標記 --- */
+.contrast-bar {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
 }
-[data-color-primary] .desk-actions #quick-copy:enabled,
-[data-color-primary] .catalog-options button[aria-pressed="true"],
-[data-color-primary] .pills button[aria-pressed="true"],
-[data-color-primary] .send-row #copy-mix:enabled,
-[data-color-primary] #use-card,
-[data-color-primary] #try-chroma[aria-pressed="true"] {
-  background: var(--desk-primary);
-  color: var(--on-desk-primary);
+
+.wcag-badge {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  opacity: 0.85;
+}
+
+#role-contrast {
+  font-size: 0.72rem;
+  opacity: 0.58;
+  line-height: 1.4;
+}
+
+/* --- 左欄底部行動列（與左欄嚴謹對齊，絕不飛去右上角壓色環） --- */
+.send-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 4px;
+}
+
+.send-row .actions {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 8px;
+}
+
+#copy-mix,
+#share-mix {
+  min-height: 40px;
+  padding: 0 14px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+  transition:
+    opacity 0.16s ease,
+    background-color 0.16s ease,
+    color 0.16s ease;
+}
+
+#copy-mix {
+  background: var(--desk-primary, #141413);
+  color: var(--on-desk-primary, #f9f8f5);
+  border: 1px solid var(--desk-primary, #141413);
+}
+
+#copy-mix:hover:not(:disabled) {
+  opacity: 0.88;
+}
+
+#share-mix {
+  border: 1px solid color-mix(in srgb, currentColor 28%, transparent);
+  color: currentColor;
+}
+
+#share-mix:hover:not(:disabled) {
   border-color: currentColor;
 }
-[data-color-primary] .head .mark {
-  background: var(--desk-primary);
-}
-[data-color-primary] #mix-title em {
-  text-decoration: underline var(--desk-primary) 0.06em;
-  text-underline-offset: 0.09em;
-}
-[data-ink-primary] #mix-title em {
-  color: var(--desk-primary);
-  text-decoration: none;
-}
-[data-color-primary] .sheet-head {
-  border-bottom: 3px solid var(--desk-primary);
-}
-[data-color-secondary] #wheel-kind,
-[data-color-secondary] .desk-actions #open-recipe,
-[data-color-secondary] .sheet-head [data-close] {
-  background: var(--desk-secondary);
-  color: var(--on-desk-secondary);
-}
-[data-color-secondary] .head .mark {
-  box-shadow:
-    4px 1px var(--desk-secondary),
-    8px 3px var(--desk-accent, var(--ink));
-}
-[data-color-accent] body > header {
-  box-shadow: inset 0 -3px var(--desk-accent);
-}
-[data-color-accent] #precision summary {
-  text-decoration: underline var(--desk-accent) 0.18em;
-  text-underline-offset: 0.3em;
-}
-[data-color-accent] .sheet-head {
-  box-shadow: inset 0 -2px var(--desk-accent);
-}
 
-.desk-actions #quick-copy {
-  font-weight: 700;
-  padding-inline: 22px;
-}
-#desk-feedback:empty {
-  display: none;
-}
-@media (max-width: 760px) {
-  .desk-actions {
-    display: grid;
-    grid-template-columns: auto 1fr;
-  }
-  #desk-feedback {
-    grid-column: 1/-1;
-  }
-}
-
-#proof-strip:not(:empty) {
-  height: clamp(26px, 3.2vw, 48px);
-}
-#advanced-output {
-  border-block: 1px solid var(--rule);
-  margin: 12px 0;
-}
-#advanced-output summary {
-  padding: 12px 0;
-  font-size: 0.88rem;
-  cursor: pointer;
+#mix-feedback {
+  font-size: 0.7rem;
+  opacity: 0.65;
 }
